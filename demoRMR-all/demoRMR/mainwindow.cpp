@@ -2,6 +2,12 @@
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <math.h>
+
+#define WHEELBASE 0.23
+#define WHEELRADIUS 0.035
+#define TICKTOMETER 0.000085292090497737556558
+#define TICKTORAD 0.002436916871363930187454
+
 ///TOTO JE DEMO PROGRAM...AK SI HO NASIEL NA PC V LABAKU NEPREPISUJ NIC,ALE SKOPIRUJ SI MA NIEKAM DO INEHO FOLDERA
 /// AK HO MAS Z GITU A ROBIS NA LABAKOVOM PC, TAK SI HO VLOZ DO FOLDERA KTORY JE JASNE ODLISITELNY OD TVOJICH KOLEGOV
 /// NASLEDNE V POLOZKE Projects SKONTROLUJ CI JE VYPNUTY shadow build...
@@ -25,9 +31,15 @@ MainWindow::MainWindow(QWidget *parent) :
 //    connect(timer, SIGNAL(timeout()), this, SLOT(getNewFrame()));
     actIndex=-1;
     useCamera1=false;
-
-
-
+    firstRun = true;
+    robotX = 0;
+    robotY = 0;
+    robotFi = 0;
+    prev_x = 0;
+    prev_y = 0;
+    prev_gyro = 0;
+    prev_left = 0;
+    prev_right = 0;
 
     datacounter=0;
 
@@ -95,28 +107,41 @@ void  MainWindow::setUiValues(double robotX,double robotY,double robotFi)
 /// vola sa vzdy ked dojdu nove data z robota. nemusite nic riesit, proste sa to stane
 int MainWindow::processThisRobot(TKobukiData robotdata)
 {
-
+    if(firstRun){
+        start_left = robotdata.EncoderLeft;
+        start_right = robotdata.EncoderRight;
+        start_gyro = robotdata.GyroAngle;
+        firstRun = false;
+        prev_left = start_left;
+        prev_right = start_right;
+    }
+    
 
     ///tu mozete robit s datami z robota
     /// ale nic vypoctovo narocne - to iste vlakno ktore cita data z robota
     ///teraz tu posielam rychlosti na zaklade toho co setne joystick a vypisujeme data z robota(kazdy 5ty krat. ale mozete skusit aj castejsie). vyratajte si polohu. a vypiste spravnu
     /// tuto joystick cast mozete vklude vymazat,alebo znasilnit na vas regulator alebo ake mate pohnutky... kazdopadne, aktualne to blokuje gombiky cize tak
-    if(instance->count()>0)
-    {
-        if(forwardspeed==0 && rotationspeed!=0)
-            robot.setRotationSpeed(rotationspeed);
-        else if(forwardspeed!=0 && rotationspeed==0)
-            robot.setTranslationSpeed(forwardspeed);
-        else if((forwardspeed!=0 && rotationspeed!=0))
-            robot.setArcSpeed(forwardspeed,forwardspeed/rotationspeed);
-        else
-            robot.setTranslationSpeed(0);
+    // if(instance->count()>0)
+    // {
+    //     if(forwardspeed==0 && rotationspeed!=0)
+    //         robot.setRotationSpeed(rotationspeed);
+    //     else if(forwardspeed!=0 && rotationspeed==0)
+    //         robot.setTranslationSpeed(forwardspeed);
+    //     else if((forwardspeed!=0 && rotationspeed!=0))
+    //         robot.setArcSpeed(forwardspeed,forwardspeed/rotationspeed);
+    //     else
+    //         robot.setTranslationSpeed(0);
 
-    }
+    // }
 ///TU PISTE KOD... TOTO JE TO MIESTO KED NEVIETE KDE ZACAT,TAK JE TO NAOZAJ TU. AK AJ TAK NEVIETE, SPYTAJTE SA CVICIACEHO MA TU NATO STRING KTORY DA DO HLADANIA XXX
 
-    if(datacounter%5)
+
+
+  //  if(datacounter%5)
     {
+
+        robotFi = robotFi + (double)((double)(robotdata.EncoderRight-prev_right)* TICKTOMETER-(double)(robotdata.EncoderLeft-prev_left)* TICKTOMETER) * WHEELRADIUS / WHEELBASE*1000;
+
 
         ///ak nastavite hodnoty priamo do prvkov okna,ako je to na tychto zakomentovanych riadkoch tak sa moze stat ze vam program padne
                 // ui->lineEdit_2->setText(QString::number(robotdata.EncoderRight));
@@ -126,7 +151,14 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 /// okno pocuva vo svojom slote a vasu premennu nastavi tak ako chcete. prikaz emit to presne takto spravi
                 /// viac o signal slotoch tu: https://doc.qt.io/qt-5/signalsandslots.html
         ///posielame sem nezmysli.. pohrajte sa nech sem idu zmysluplne veci
-        emit uiValuesChanged(robotdata.EncoderLeft,11,12);
+        emit uiValuesChanged(0,0,robotFi);
+        prev_right=robotdata.EncoderRight;
+        prev_left=robotdata.EncoderLeft;
+
+        // prev_x = robotX;
+        // prev_y = robotY;
+        // prev_gyro = robotFi;
+
         ///toto neodporucam na nejake komplikovane struktury.signal slot robi kopiu dat. radsej vtedy posielajte
         /// prazdny signal a slot bude vykreslovat strukturu (vtedy ju musite mat samozrejme ako member premmennu v mainwindow.ak u niekoho najdem globalnu premennu,tak bude cistit bludisko zubnou kefkou.. kefku dodam)
         /// vtedy ale odporucam pouzit mutex, aby sa vam nestalo ze budete pocas vypisovania prepisovat niekde inde

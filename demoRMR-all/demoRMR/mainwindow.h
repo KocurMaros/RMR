@@ -86,6 +86,23 @@ private:
 
      double forwardspeed;//mm/s
      double rotationspeed;//omega/s
+
+     int prev_x;
+     int prev_y;
+     int prev_gyro;
+    bool firstRun;
+
+    int start_left;
+    int start_right;
+    int start_gyro;
+
+    int prev_left;
+    int prev_right;
+
+    int robotX;
+    int robotY;
+    int robotFi;
+
 public slots:
      void setUiValues(double robotX,double robotY,double robotFi);
 signals:
