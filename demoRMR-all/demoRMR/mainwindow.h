@@ -71,6 +71,7 @@ private slots:
 
 private:
 
+    double calculateEncoderDelta(int prev, int actual);
     //--skuste tu nic nevymazat... pridavajte co chcete, ale pri odoberani by sa mohol stat nejaky drobny problem, co bude vyhadzovat chyby
     Ui::MainWindow *ui;
      void paintEvent(QPaintEvent *event);// Q_DECL_OVERRIDE;
@@ -90,7 +91,7 @@ private:
      int prev_x;
      int prev_y;
      int prev_gyro;
-    bool firstRun;
+    bool first_run;
 
     int start_left;
     int start_right;
@@ -99,9 +100,13 @@ private:
     int prev_left;
     int prev_right;
 
-    int robotX;
-    int robotY;
-    int robotFi;
+    double delta_wheel_left;
+    double delta_wheel_right;
+
+    double robotX;
+    double robotY;
+    double robotFi;
+    double prev_fi;
 
 public slots:
      void setUiValues(double robotX,double robotY,double robotFi);

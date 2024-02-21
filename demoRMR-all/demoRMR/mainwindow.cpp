@@ -7,6 +7,7 @@
 #define WHEELRADIUS 0.035
 #define TICKTOMETER 0.000085292090497737556558
 #define TICKTORAD 0.002436916871363930187454
+#define ENCODEROVERFLOW 65536
 
 ///TOTO JE DEMO PROGRAM...AK SI HO NASIEL NA PC V LABAKU NEPREPISUJ NIC,ALE SKOPIRUJ SI MA NIEKAM DO INEHO FOLDERA
 /// AK HO MAS Z GITU A ROBIS NA LABAKOVOM PC, TAK SI HO VLOZ DO FOLDERA KTORY JE JASNE ODLISITELNY OD TVOJICH KOLEGOV
@@ -31,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
 //    connect(timer, SIGNAL(timeout()), this, SLOT(getNewFrame()));
     actIndex=-1;
     useCamera1=false;
-    firstRun = true;
+    first_run = true;
     robotX = 0;
     robotY = 0;
     robotFi = 0;
@@ -40,7 +41,6 @@ MainWindow::MainWindow(QWidget *parent) :
     prev_gyro = 0;
     prev_left = 0;
     prev_right = 0;
-
     datacounter=0;
 
 
@@ -103,15 +103,30 @@ void  MainWindow::setUiValues(double robotX,double robotY,double robotFi)
      ui->lineEdit_4->setText(QString::number(robotFi));
 }
 
+double MainWindow::calculateEncoderDelta(int prev, int actual) {
+    int delta;
+    if (actual > 60000 && prev < 5000) {
+        delta = actual - prev - ENCODEROVERFLOW;
+    }
+    else if (actual < 5000 && prev > 60000) {
+        delta = actual - prev + ENCODEROVERFLOW;
+    }
+    else {
+        delta = actual - prev;
+    }
+    return TICKTOMETER*delta;
+
+}
+
 ///toto je calback na data z robota, ktory ste podhodili robotu vo funkcii on_pushButton_9_clicked
 /// vola sa vzdy ked dojdu nove data z robota. nemusite nic riesit, proste sa to stane
 int MainWindow::processThisRobot(TKobukiData robotdata)
 {
-    if(firstRun){
+    if(first_run){
         start_left = robotdata.EncoderLeft;
         start_right = robotdata.EncoderRight;
         start_gyro = robotdata.GyroAngle;
-        firstRun = false;
+        first_run = false;
         prev_left = start_left;
         prev_right = start_right;
     }
@@ -140,8 +155,27 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
   //  if(datacounter%5)
     {
 
-        robotFi = robotFi + (double)((double)(robotdata.EncoderRight-prev_right)* TICKTOMETER-(double)(robotdata.EncoderLeft-prev_left)* TICKTOMETER) * WHEELRADIUS / WHEELBASE*1000;
+        
 
+
+
+
+        delta_wheel_right = calculateEncoderDelta(prev_right, robotdata.EncoderRight); //TODO: vyhodit funkciu kvoli speed a dat kod napriamo sem? 
+        delta_wheel_left = calculateEncoderDelta(prev_left, robotdata.EncoderLeft);
+        robotFi = robotFi + (delta_wheel_right - delta_wheel_left) / WHEELBASE/PI*180.0;
+        
+        if (delta_wheel_left == delta_wheel_right) {
+            robotX = robotX + (delta_wheel_left + delta_wheel_right)/2*cos(robotFi*PI/180.0);
+            robotY = robotY + (delta_wheel_left + delta_wheel_right)/2*sin(robotFi*PI/180.0);
+        }
+        else {
+            robotX = robotX + (delta_wheel_right+delta_wheel_left)/(delta_wheel_right-delta_wheel_left)*WHEELBASE/2*(sin(robotFi*PI/180.0)-sin(prev_fi*PI/180.0));
+            robotY = robotY - (delta_wheel_right+delta_wheel_left)/(delta_wheel_right-delta_wheel_left)*WHEELBASE/2*(cos(robotFi*PI/180.0)-cos(prev_fi*PI/180.0));
+        }
+
+
+
+        // std::cout << "encoder: " << robotdata.EncoderLeft << std::endl;
 
         ///ak nastavite hodnoty priamo do prvkov okna,ako je to na tychto zakomentovanych riadkoch tak sa moze stat ze vam program padne
                 // ui->lineEdit_2->setText(QString::number(robotdata.EncoderRight));
@@ -151,9 +185,10 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 /// okno pocuva vo svojom slote a vasu premennu nastavi tak ako chcete. prikaz emit to presne takto spravi
                 /// viac o signal slotoch tu: https://doc.qt.io/qt-5/signalsandslots.html
         ///posielame sem nezmysli.. pohrajte sa nech sem idu zmysluplne veci
-        emit uiValuesChanged(0,0,robotFi);
+        emit uiValuesChanged(robotX,robotY,robotFi);
         prev_right=robotdata.EncoderRight;
         prev_left=robotdata.EncoderLeft;
+        prev_fi = robotFi;
 
         // prev_x = robotX;
         // prev_y = robotY;
