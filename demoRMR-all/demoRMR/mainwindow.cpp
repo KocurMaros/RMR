@@ -163,7 +163,12 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         delta_wheel_right = calculateEncoderDelta(prev_right, robotdata.EncoderRight); //TODO: vyhodit funkciu kvoli speed a dat kod napriamo sem? 
         delta_wheel_left = calculateEncoderDelta(prev_left, robotdata.EncoderLeft);
         robotFi = robotFi + (delta_wheel_right - delta_wheel_left) / WHEELBASE/PI*180.0;
-        
+        if (robotFi >= 180){
+            robotFi = robotFi - 360;
+        }
+        else if (robotFi < -180) {
+            robotFi = robotFi + 360;
+        }
         if (delta_wheel_left == delta_wheel_right) {
             robotX = robotX + (delta_wheel_left + delta_wheel_right)/2*cos(robotFi*PI/180.0);
             robotY = robotY + (delta_wheel_left + delta_wheel_right)/2*sin(robotFi*PI/180.0);
