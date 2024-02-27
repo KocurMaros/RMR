@@ -47,7 +47,7 @@ typedef struct
     double Ki;
     double I;
     double dt;
-}PI_controller;
+}PI_params;
 
 
 class ROBOT_EXPORT Robot
@@ -60,7 +60,7 @@ public:
     Coords actual;
     Coords desired;
     MovementsParam param;
-    PI_controller controller;
+    PI_params controller;
 
     //default functions.. please do not rewrite.. make your own callback
     static  std::function<int(TKobukiData)> do_nothing_robot;
@@ -85,7 +85,7 @@ public:
         wasRobotSet=1;
     }
     // void controller(Coords *actual, MovementsParam *param, Coords *desired, PI_controller *controller);
-    void controller();
+    void PI_controller();
 
     void setTranslationSpeed(int mmpersec);
 

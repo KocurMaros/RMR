@@ -276,7 +276,7 @@ void Robot::imageViewer()
     cap.release();
 }
 
-void Robot::controller() {
+void Robot::PI_controller() {
 // void Robot::controller(Coords *actual, MovementsParam *param, Coords *desired, PI_controller *controller) {
 
     double error_distance = sqrt(pow(desired->x - actual->x, 2) + pow(desired->y - actual->y, 2));
