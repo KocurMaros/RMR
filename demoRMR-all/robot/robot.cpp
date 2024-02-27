@@ -261,7 +261,7 @@ void Robot::imageViewer()
 
 
 
-        std::cout<<"doslo toto "<<frameBuf.rows<<" "<<frameBuf.cols<<std::endl;
+        // std::cout<<"doslo toto "<<frameBuf.rows<<" "<<frameBuf.cols<<std::endl;
 
 
       // tu sa vola callback..
@@ -279,13 +279,17 @@ void Robot::imageViewer()
 void Robot::PI_controller() {
 // void Robot::controller(Coords *actual, MovementsParam *param, Coords *desired, PI_controller *controller) {
 
-    double error_distance = sqrt(pow(desired->x - actual->x, 2) + pow(desired->y - actual->y, 2));
-    double error_angle = atan2(desired->y - actual->y, desired->x - actual->x) - actual->theta;
+    double error_distance = sqrt(pow(desired.x - actual.x, 2) + pow(desired.y - actual.y, 2));
+    double error_angle = atan2(desired.y - actual.y, desired.x - actual.x) - actual.theta;
+    // double error_angle = atan2(desired.y - actual.y, desired.x - actual.x);
 
-    controller->I = controller->I + error*controller->dt;
-    
-    double omega = controller->Kp*error_distance + controller->Ki*controller->I;
 
-    param->radius = error_distance / (2*sin(error_angle));
-    param->speed = omega*param->radius;
+    controller.I = controller.I + error_distance*controller.dt;
+
+    double omega = controller.Kp*error_distance + controller.Ki*controller.I;
+    cout << error_angle << " " << error_distance << " " << omega << endl;
+    param.radius = (int) (error_distance / (2*sin(error_angle)));
+    param.speed =(int) (omega*param.radius);
+
+    // cout << param.radius << " " << param.speed << endl;
 }

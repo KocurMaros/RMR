@@ -30,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
   //  timer = new QTimer(this);
 //    connect(timer, SIGNAL(timeout()), this, SLOT(getNewFrame()));
+    bruh = false;
     actIndex=-1;
     useCamera1=false;
     first_run = true;
@@ -42,8 +43,10 @@ MainWindow::MainWindow(QWidget *parent) :
     prev_left = 0;
     prev_right = 0;
     datacounter=0;
-
-
+    robot.controller.Ki = 1;
+    robot.controller.Kp = 100;
+    robot.controller.dt = 1/40;
+    robot.controller.I = 0;
 }
 
 MainWindow::~MainWindow()
@@ -192,6 +195,15 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         // prev_x = robotX;
         // prev_y = robotY;
         // prev_gyro = robotFi;
+        robot.actual.x = 1000*robotX;
+        robot.actual.y = 1000*robotY;
+        robot.actual.theta = robotFi*PI/180.0;
+
+        if (bruh) {
+            robot.PI_controller();
+            // cout << robot.param.radius << " " << robot.param.speed << endl;
+            robot.setArcSpeed(robot.param.speed,robot.param.radius);
+        }
 
         ///toto neodporucam na nejake komplikovane struktury.signal slot robi kopiu dat. radsej vtedy posielajte
         /// prazdny signal a slot bude vykreslovat strukturu (vtedy ju musite mat samozrejme ako member premmennu v mainwindow.ak u niekoho najdem globalnu premennu,tak bude cistit bludisko zubnou kefkou.. kefku dodam)
@@ -293,11 +305,14 @@ robot.setRotationSpeed(-3.14159/2);
 void MainWindow::on_pushButton_4_clicked() //stop
 {
     robot.setTranslationSpeed(0);
+    bruh = false;
 
 }
 void MainWindow::on_pushButton_7_clicked() //arc left
 {
-    robot.controller(&actual,&param,&desired,&controller);
+    robot.desired.x = 1000;
+    robot.desired.y = 0;
+    bruh = true;
 }
 
 

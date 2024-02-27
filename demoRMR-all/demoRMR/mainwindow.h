@@ -65,6 +65,8 @@ private slots:
     void on_pushButton_5_clicked();
 
     void on_pushButton_4_clicked();
+    void on_pushButton_7_clicked();
+
 
     void on_pushButton_clicked();
     void getNewFrame();
@@ -93,6 +95,7 @@ private:
      int prev_gyro;
     bool first_run;
 
+     bool bruh;
     int start_left;
     int start_right;
     int start_gyro;
