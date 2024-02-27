@@ -154,12 +154,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
   //  if(datacounter%5)
     {
-
-        
-
-
-
-
         delta_wheel_right = calculateEncoderDelta(prev_right, robotdata.EncoderRight); //TODO: vyhodit funkciu kvoli speed a dat kod napriamo sem? 
         delta_wheel_left = calculateEncoderDelta(prev_left, robotdata.EncoderLeft);
         robotFi = robotFi + (delta_wheel_right - delta_wheel_left) / WHEELBASE/PI*180.0;
@@ -205,6 +199,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
     }
     datacounter++;
+
 
     return 0;
 
@@ -300,7 +295,10 @@ void MainWindow::on_pushButton_4_clicked() //stop
     robot.setTranslationSpeed(0);
 
 }
-
+void MainWindow::on_pushButton_7_clicked() //arc left
+{
+    robot.controller(&actual,&param,&desired,&controller);
+}
 
 
 

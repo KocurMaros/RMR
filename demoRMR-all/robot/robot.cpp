@@ -23,6 +23,7 @@ Robot::~Robot()
     robotthreadHandle.join();
     laserthreadHandle.join();
     camerathreadhandle.join();
+
 #ifdef _WIN32
 WSACleanup();
 #endif
@@ -273,4 +274,18 @@ void Robot::imageViewer()
 
     }
     cap.release();
+}
+
+void Robot::controller() {
+// void Robot::controller(Coords *actual, MovementsParam *param, Coords *desired, PI_controller *controller) {
+
+    double error_distance = sqrt(pow(desired->x - actual->x, 2) + pow(desired->y - actual->y, 2));
+    double error_angle = atan2(desired->y - actual->y, desired->x - actual->x) - actual->theta;
+
+    controller->I = controller->I + error*controller->dt;
+    
+    double omega = controller->Kp*error_distance + controller->Ki*controller->I;
+
+    param->radius = error_distance / (2*sin(error_angle));
+    param->speed = omega*param->radius;
 }

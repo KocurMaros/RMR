@@ -155,7 +155,7 @@ private:
 
     int parseKobukiMessage(TKobukiData &output, unsigned char *data );
 
-    int checkChecksum(unsigned char *data);
+	int checkChecksum(unsigned char *data);
 
     //--spustenie merania v novom vlakne (vycitavanie bezi v novom vlakne. treba ho stopnut ak chceme poslat request)
 
