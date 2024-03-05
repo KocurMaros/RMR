@@ -18,6 +18,7 @@
 /// AK SA DOSTANES NA SKUSKU
 
 
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -34,19 +35,21 @@ MainWindow::MainWindow(QWidget *parent) :
     actIndex=-1;
     useCamera1=false;
     first_run = true;
+
     robotX = 0;
     robotY = 0;
     robotFi = 0;
+
     prev_x = 0;
     prev_y = 0;
     prev_gyro = 0;
     prev_left = 0;
     prev_right = 0;
     datacounter=0;
-    robot.controller.Ki = 1;
-    robot.controller.Kp = 100;
-    robot.controller.dt = 1/40;
-    robot.controller.I = 0;
+
+    // point = Point(0,0,0);
+    // controller = PIController(100, 1);
+    // controller.clearIntegral();
 }
 
 MainWindow::~MainWindow()
@@ -195,14 +198,17 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         // prev_x = robotX;
         // prev_y = robotY;
         // prev_gyro = robotFi;
-        robot.actual.x = 1000*robotX;
-        robot.actual.y = 1000*robotY;
-        robot.actual.theta = robotFi*PI/180.0;
+        // actual.x = 1000*robotX;
+        // actual.y = 1000*robotY;
+        // actual.theta = robotFi*PI/180.0;
 
+        point.setPointActual(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
-            robot.PI_controller();
+            double speed, radius;
+            point.setPointDesire(1000,0,0);
+            controller.compute(1000,0,0,robotX*1000, robotY*1000, robotFi*PI/180.0, 1/40, &speed, &radius);
             // cout << robot.param.radius << " " << robot.param.speed << endl;
-            robot.setArcSpeed(robot.param.speed,robot.param.radius);
+            robot.setArcSpeed(speed,radius);
         }
 
         ///toto neodporucam na nejake komplikovane struktury.signal slot robi kopiu dat. radsej vtedy posielajte
@@ -310,8 +316,6 @@ void MainWindow::on_pushButton_4_clicked() //stop
 }
 void MainWindow::on_pushButton_7_clicked() //arc left
 {
-    robot.desired.x = 1000;
-    robot.desired.y = 0;
     bruh = true;
 }
 

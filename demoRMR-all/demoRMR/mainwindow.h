@@ -25,8 +25,17 @@
 #include "opencv2/videoio.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "robot.h"
-
 #include <QJoysticks.h>
+
+// #include "controller.h"
+// #include "point.h"
+
+typedef struct
+{
+    int speed;
+    int radius;
+}MovementsParam;
+
 namespace Ui {
 class MainWindow;
 }
@@ -37,6 +46,9 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    
+    MovementsParam param;
+
     bool useCamera1;
   //  cv::VideoCapture cap;
 
@@ -76,26 +88,30 @@ private:
     double calculateEncoderDelta(int prev, int actual);
     //--skuste tu nic nevymazat... pridavajte co chcete, ale pri odoberani by sa mohol stat nejaky drobny problem, co bude vyhadzovat chyby
     Ui::MainWindow *ui;
-     void paintEvent(QPaintEvent *event);// Q_DECL_OVERRIDE;
-     int updateLaserPicture;
-     LaserMeasurement copyOfLaserData;
-     std::string ipaddress;
-     Robot robot;
-     TKobukiData robotdata;
-     int datacounter;
-     QTimer *timer;
+    void paintEvent(QPaintEvent *event);// Q_DECL_OVERRIDE;
+    int updateLaserPicture;
+    LaserMeasurement copyOfLaserData;
+    std::string ipaddress;
+    Robot robot;
 
-     QJoysticks *instance;
+    PIController controller;
+    Point point ; 
+     
+    TKobukiData robotdata;
+    int datacounter;
+    QTimer *timer;
 
-     double forwardspeed;//mm/s
-     double rotationspeed;//omega/s
+    QJoysticks *instance;
 
-     int prev_x;
-     int prev_y;
-     int prev_gyro;
+    double forwardspeed;//mm/s
+    double rotationspeed;//omega/s
+
+    int prev_x;
+    int prev_y;
+    int prev_gyro;
     bool first_run;
 
-     bool bruh;
+    bool bruh;
     int start_left;
     int start_right;
     int start_gyro;

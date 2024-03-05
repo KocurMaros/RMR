@@ -76,14 +76,16 @@ INCLUDEPATH += /usr/local/include/opencv4/
 SOURCES += \
     CKobuki.cpp \
     robot.cpp \
-    rplidar.cpp
+    rplidar.cpp \
+    controller.cpp
 
 HEADERS += \
     CKobuki.h \
     robot_global.h \
     robot.h \
     rplidar.h \
-    szevent.h
+    szevent.h \
+    controller.h
 
 # Default rules for deployment.
 unix {

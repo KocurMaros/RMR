@@ -28,26 +28,6 @@
 #include <iostream>
 #include <memory>
 
-typedef struct
-{
-    double x;
-    double y;
-    double theta;
-}Coords;
-
-typedef struct
-{
-    int speed;
-    int radius;
-}MovementsParam;
-
-typedef struct
-{
-    double Kp;
-    double Ki;
-    double I;
-    double dt;
-}PI_params;
 
 
 class ROBOT_EXPORT Robot
@@ -57,11 +37,7 @@ public:
     ~Robot();
     Robot(std::string ipaddressLaser="127.0.0.1",int laserportRobot=52999, int laserportMe=5299,std::function<int(LaserMeasurement)> &lascallback=do_nothing_laser,std::string ipaddressRobot="127.0.0.1",int robotportRobot=53000, int robotportMe=5300,std::function<int(TKobukiData)> &robcallback=do_nothing_robot);
 
-    Coords actual;
-    Coords desired;
-    MovementsParam param;
-    PI_params controller;
-
+    
     //default functions.. please do not rewrite.. make your own callback
     static  std::function<int(TKobukiData)> do_nothing_robot;
     static std::function<int(LaserMeasurement)> do_nothing_laser;
