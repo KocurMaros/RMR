@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actIndex=-1;
     useCamera1=false;
     first_run = true;
-    controller = make_shared<PIController>(1,0.01,1);
+    controller = make_shared<PIController>(1,0.01,10);
     point = make_shared<Point>(0,0,0);
     robotX = 0;
     robotY = 0;
@@ -206,10 +206,10 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         point->setPointActual(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
             int trans_speed, rot_speed, radius;
-            point->setPointDesire(1000,0,90*PI/180);
+            point->setPointDesire(1000,500,0);
             controller->compute(*point,(double)1/40, &trans_speed, &rot_speed);
             if (rot_speed>=MAX_SPEED/4){
-                robot.setTranslationSpeed(rot_speed);
+                robot.setRotationSpeed(rot_speed);
             }
             else if(rot_speed < 1){
                 robot.setTranslationSpeed(trans_speed);
@@ -221,6 +221,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             if(point->getDeltaX() < WITHIN_TOLERANCE && point->getDeltaY() < WITHIN_TOLERANCE && point->getDeltaTheta() < WITHIN_TOLERANCE_THETA){
                 bruh = false;
                 controller->clearIntegral();
+                robot.setTranslationSpeed(0);
+                std::cout << "clear integral" << std::endl;
             }
 
         }
