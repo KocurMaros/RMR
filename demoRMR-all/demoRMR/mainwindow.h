@@ -94,8 +94,8 @@ private:
     std::string ipaddress;
     Robot robot;
 
-    PIController controller(100, 1);
-    Point point(0,0,0);
+    std::shared_ptr<PIController> controller;
+    std::shared_ptr<Point> point;
      
     TKobukiData robotdata;
     int datacounter;

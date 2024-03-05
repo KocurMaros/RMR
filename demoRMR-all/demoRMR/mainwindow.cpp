@@ -35,7 +35,8 @@ MainWindow::MainWindow(QWidget *parent) :
     actIndex=-1;
     useCamera1=false;
     first_run = true;
-
+    controller = make_shared<PIController>(1,0.01,1);
+    point = make_shared<Point>(0,0,0);
     robotX = 0;
     robotY = 0;
     robotFi = 0;
@@ -46,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
     prev_left = 0;
     prev_right = 0;
     datacounter=0;
-    controller.clearIntegral();
+    controller->clearIntegral();
 }
 
 MainWindow::~MainWindow()
@@ -201,11 +202,17 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
         point->setPointActual(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
-            double speed, radius;
+            int trans_speed, rot_speed, radius;
             point->setPointDesire(1000,0,0);
-            controller.compute(1000,0,0,robotX*1000, robotY*1000, robotFi*PI/180.0, 1/40, &speed, &radius);
-            // cout << robot.param.radius << " " << robot.param.speed << endl;
-            robot.setArcSpeed(speed,radius);
+            controller->compute(*point,(double)1/40, &trans_speed, &rot_speed);
+            if(rot_speed < 1){
+                robot.setTranslationSpeed(trans_speed);
+            }else{
+                radius = trans_speed/rot_speed;
+                cout << trans_speed << " " << rot_speed << endl;
+                robot.setArcSpeed(trans_speed,radius);
+            }
+
         }
 
         ///toto neodporucam na nejake komplikovane struktury.signal slot robi kopiu dat. radsej vtedy posielajte
