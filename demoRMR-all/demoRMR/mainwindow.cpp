@@ -203,9 +203,12 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         point->setPointActual(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
             int trans_speed, rot_speed, radius;
-            point->setPointDesire(1000,0,0);
+            point->setPointDesire(1000,0,90*PI/180);
             controller->compute(*point,(double)1/40, &trans_speed, &rot_speed);
-            if(rot_speed < 1){
+            if (rot_speed>=MAX_SPEED/4){
+                robot.setTranslationSpeed(rot_speed);
+            }
+            else if(rot_speed < 1){
                 robot.setTranslationSpeed(trans_speed);
             }else{
                 radius = trans_speed/rot_speed;
