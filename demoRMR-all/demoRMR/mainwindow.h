@@ -27,8 +27,8 @@
 #include "robot.h"
 #include <QJoysticks.h>
 
-// #include "controller.h"
-// #include "point.h"
+#include "controller.h"
+#include "point.h"
 
 typedef struct
 {
@@ -94,8 +94,8 @@ private:
     std::string ipaddress;
     Robot robot;
 
-    PIController controller;
-    Point point ; 
+    PIController controller(100, 1);
+    Point point(0,0,0);
      
     TKobukiData robotdata;
     int datacounter;

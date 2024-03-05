@@ -46,10 +46,7 @@ MainWindow::MainWindow(QWidget *parent) :
     prev_left = 0;
     prev_right = 0;
     datacounter=0;
-
-    // point = Point(0,0,0);
-    // controller = PIController(100, 1);
-    // controller.clearIntegral();
+    controller.clearIntegral();
 }
 
 MainWindow::~MainWindow()
@@ -202,10 +199,10 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         // actual.y = 1000*robotY;
         // actual.theta = robotFi*PI/180.0;
 
-        point.setPointActual(robotX*1000, robotY*1000, robotFi*PI/180.0);
+        point->setPointActual(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
             double speed, radius;
-            point.setPointDesire(1000,0,0);
+            point->setPointDesire(1000,0,0);
             controller.compute(1000,0,0,robotX*1000, robotY*1000, robotFi*PI/180.0, 1/40, &speed, &radius);
             // cout << robot.param.radius << " " << robot.param.speed << endl;
             robot.setArcSpeed(speed,radius);
