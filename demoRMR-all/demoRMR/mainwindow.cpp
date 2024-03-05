@@ -9,6 +9,9 @@
 #define TICKTORAD 0.002436916871363930187454
 #define ENCODEROVERFLOW 65536
 
+#define WITHIN_TOLERANCE 5
+#define WITHIN_TOLERANCE_THETA 0.0174533
+
 ///TOTO JE DEMO PROGRAM...AK SI HO NASIEL NA PC V LABAKU NEPREPISUJ NIC,ALE SKOPIRUJ SI MA NIEKAM DO INEHO FOLDERA
 /// AK HO MAS Z GITU A ROBIS NA LABAKOVOM PC, TAK SI HO VLOZ DO FOLDERA KTORY JE JASNE ODLISITELNY OD TVOJICH KOLEGOV
 /// NASLEDNE V POLOZKE Projects SKONTROLUJ CI JE VYPNUTY shadow build...
@@ -214,6 +217,10 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 radius = trans_speed/rot_speed;
                 cout << trans_speed << " " << rot_speed << endl;
                 robot.setArcSpeed(trans_speed,radius);
+            }
+            if(point->getDeltaX() < WITHIN_TOLERANCE && point->getDeltaY() < WITHIN_TOLERANCE && point->getDeltaTheta() < WITHIN_TOLERANCE_THETA){
+                bruh = false;
+                controller->clearIntegral();
             }
 
         }

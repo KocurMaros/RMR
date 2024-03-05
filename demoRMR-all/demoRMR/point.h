@@ -10,6 +10,9 @@ public:
     void setPointActual(double x, double y, double theta){actual_x = x; actual_y = y; actual_theta = theta;}; // Setter for both x and y coordinates
     void getPointDesire(double *x, double *y, double *theta){*x = desire_x; *y = desire_y; *theta = desire_theta;}; // Getter for both x and y coordinates
     void getPointActual(double *x, double *y, double *theta){*x = actual_x; *y = actual_y; *theta = actual_theta;}; // Getter for both x and y coordinates
+    double getDeltaX(){return desire_x - actual_x;}; // Getter for the difference in x coordinates
+    double getDeltaY(){return desire_y - actual_y;}; // Getter for the difference in y coordinates
+    double getDeltaTheta(){return desire_theta - actual_theta;}; // Getter for the difference in angle
 private:
     double desire_x; // x coordinate
     double desire_y; // y coordinate
