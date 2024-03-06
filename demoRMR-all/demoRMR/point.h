@@ -4,21 +4,17 @@
 class Point {
 public:
     Point(); // Default constructor
-    Point(double x, double y, double theta){actual_x = x; actual_y = y;actual_theta = theta;}; // Parameterized constructor
+    Point(double x, double y, double theta){this.x = x; this.y = y;this.theta = theta;}; // Parameterized constructor
 
-    void setPointDesire(double x, double y, double theta){desire_x = x; desire_y = y; desire_theta = theta;}; // Setter for both x and y coordinates
-    void setPointActual(double x, double y, double theta){actual_x = x; actual_y = y; actual_theta = theta;}; // Setter for both x and y coordinates
-    void getPointDesire(double *x, double *y, double *theta){*x = desire_x; *y = desire_y; *theta = desire_theta;}; // Getter for both x and y coordinates
-    void getPointActual(double *x, double *y, double *theta){*x = actual_x; *y = actual_y; *theta = actual_theta;}; // Getter for both x and y coordinates
-    double getDeltaX(){return desire_x - actual_x;}; // Getter for the difference in x coordinates
-    double getDeltaY(){return desire_y - actual_y;}; // Getter for the difference in y coordinates
-    double getDeltaTheta(){return desire_theta - actual_theta;}; // Getter for the difference in angle
+    void setPoint(double x, double y, double theta){this.x = x; this.y = y; this.theta = theta;}; // Setter for both x and y coordinates
+    void getPoint(double *x, double *y, double *theta){*x = this.x; *y = this.y; *theta = this.theta;}; // Getter for both x and y coordinates
+    double getX(){return x;}; // Getter for the difference in x coordinates
+    double getY(){return y;}; // Getter for the difference in y coordinates
+    double getTheta(){return  theta;}; // Getter for the difference in angle
+
 private:
-    double desire_x; // x coordinate
-    double desire_y; // y coordinate
-    double desire_theta; // angle
-    double actual_x; // x coordinate
-    double actual_y; // y coordinate
-    double actual_theta; // angle
+    double x; // x coordinate
+    double y; // y coordinate
+    double theta; // angle
 };
 #endif

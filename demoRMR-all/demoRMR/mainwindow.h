@@ -95,7 +95,10 @@ private:
     Robot robot;
 
     std::shared_ptr<PIController> controller;
-    std::shared_ptr<Point> point;
+    std::shared_ptr<Point> actual_point;
+    std::shared_ptr<Point> set_point;
+    std::shared_ptr<Point> desired_point;
+    
      
     TKobukiData robotdata;
     int datacounter;

@@ -6,14 +6,19 @@ PIController::PIController(double kp, double ki, double kp_rot) : kp_(kp), ki_(k
 PIController::~PIController() {}
 
 
-void PIController::compute(Point point, double dt_, int *trans_speed, int *rot_speed) {
+void PIController::compute(Point actual_point, Point desired_point, double dt_, int *trans_speed, int *rot_speed) {
 //  double compute(double desired_x,double desired_y, double desired_theta,
 //                    double actual_x,double actual_y, double actual_theta,
 //                    double dt_, double &speed, double &radius){   
     double actual_x, actual_y, actual_theta;
     double desired_x, desired_y, desired_theta;
-    point.getPointActual(&actual_x,  &actual_y, &actual_theta);
-    point.getPointDesire(&desired_x, &desired_y, &desired_theta);
+    actual_x = actual_point.getX();
+    actual_y = actual_point.getY();
+    actual_theta = actual_point.getTheta();
+    desired_x = desired_point.getX();
+    desired_y = desired_point.getY();
+    desired_theta = desired_point.getTheta();
+
 
     double error_distance = sqrt(pow(desired_x - actual_x, 2) + pow(desired_y - actual_y, 2));
     double error_angle = atan2(desired_y - actual_y, desired_x - actual_x) - actual_theta;

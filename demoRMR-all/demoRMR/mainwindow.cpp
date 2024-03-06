@@ -39,7 +39,10 @@ MainWindow::MainWindow(QWidget *parent) :
     useCamera1=false;
     first_run = true;
     controller = make_shared<PIController>(1,0.01,10);
-    point = make_shared<Point>(0,0,0);
+    actual_point = make_shared<Point>(0,0,0);
+    set_point = make_shared<Point>(0,0,0);
+    desired_point = make_shared<Point>(0,0,0);
+    
     robotX = 0;
     robotY = 0;
     robotFi = 0;
@@ -203,11 +206,11 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         // actual.y = 1000*robotY;
         // actual.theta = robotFi*PI/180.0;
 
-        point->setPointActual(robotX*1000, robotY*1000, robotFi*PI/180.0);
+        actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
             int trans_speed, rot_speed, radius;
-            point->setPointDesire(1000,500,0);
-            controller->compute(*point,(double)1/40, &trans_speed, &rot_speed);
+            desired_point->setPoint(1000,500,0);
+            controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
             if (rot_speed>=MAX_SPEED/4){
                 robot.setRotationSpeed(rot_speed);
             }
