@@ -8,16 +8,12 @@ public:
     Ramp();
     ~Ramp();
 
-    Point compute(Point actual_point, double dt);
-    void set_start_conditions(Point start_point, Point end_point);
+    void compute(double *speed, double *speed_rot, double change_speed);
+    void clear_time(){curren_time = 0;};
 
 private:
-    double current_time;
-    double ramp_time = 1.0;  //to max speed in 1 second
-    Point start_point;
-    Point end_point;
-    double distance;
-    double angle;
+    double current_speed_multiplier;
+    double max_speed = 1.0;  //to max speed 100%
 }
 
 #endif

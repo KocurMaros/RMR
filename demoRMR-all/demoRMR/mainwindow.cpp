@@ -225,6 +225,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 bruh = false;
                 controller->clearIntegral();
                 robot.setTranslationSpeed(0);
+                
                 std::cout << "clear integral" << std::endl;
             }
 

@@ -29,6 +29,7 @@
 
 #include "controller.h"
 #include "point.h"
+#include "ramp.h"
 
 typedef struct
 {

@@ -4,6 +4,7 @@
 #include "point.h"
 #include <iostream>
 #include <math.h>
+#include "ramp.h"
 
 #define MAX_SPEED       400//mm/s
 class PIController {
@@ -17,7 +18,7 @@ public:
     //                double dt_, double &speed, double &radius);
     void clearIntegral() { integral_ = 0.0; }
 private:
-    
+    Ramp ramp;
     double kp_;
     double kp_rot_;
     double ki_;

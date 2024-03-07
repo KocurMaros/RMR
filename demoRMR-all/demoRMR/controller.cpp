@@ -1,15 +1,15 @@
 #include "controller.h"
 
 // Implement your controller functions here
-PIController::PIController(double kp, double ki, double kp_rot) : kp_(kp), ki_(ki),kp_rot_(kp_rot), integral_(0.0) {}
+PIController::PIController(double kp, double ki, double kp_rot) : kp_(kp), ki_(ki),kp_rot_(kp_rot), integral_(0.0) {
+    ramp = Ramp();
+}
 
 PIController::~PIController() {}
 
 
 void PIController::compute(Point actual_point, Point desired_point, double dt_, int *trans_speed, int *rot_speed) {
-//  double compute(double desired_x,double desired_y, double desired_theta,
-//                    double actual_x,double actual_y, double actual_theta,
-//                    double dt_, double &speed, double &radius){   
+    
     double actual_x, actual_y, actual_theta;
     double desired_x, desired_y, desired_theta;
     actual_x = actual_point.getX();
@@ -34,6 +34,9 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
     }
     if(omega_rot > MAX_SPEED/2)
         omega_rot = MAX_SPEED/2;
+    ramp.compute(&omega, &omega_rot, 0.10); 
+    if(*trans_speed <= 10 && *rot_speed <= 1) //ak je spped mensai nez 10mm/sec i rotacna < 1 Rad
+        ramp.clear_time();
     //std::cout << error_angle << " " << error_distance << " " << omega << std::endl;
     *rot_speed = static_cast<int> (omega_rot);
     *trans_speed =static_cast<int> (omega);
