@@ -84,8 +84,11 @@ private slots:
     void on_pushButton_clicked();
     void getNewFrame();
 
+    void on_pushButton_10_clicked();
+
 private:
 
+    void addPointAtStart(Point p);
     double calculateEncoderDelta(int prev, int actual);
     //--skuste tu nic nevymazat... pridavajte co chcete, ale pri odoberani by sa mohol stat nejaky drobny problem, co bude vyhadzovat chyby
     Ui::MainWindow *ui;
@@ -100,6 +103,13 @@ private:
     std::shared_ptr<Point> set_point;
     std::shared_ptr<Point> desired_point;
     
+
+    std::vector<Point> points_vector;
+    //vektor bude mat v sebe body, ktore, ked ich budes pridavat manualne tak sa pridaju appendom nakoniec
+    //robot bude prechadzat bodmi tak, ze vzdy pojde na nulty bod vo vektore, akonahle sa tam dostane sa tento bod odstrani z vektora
+    //robot bude chodit na body, len v pripade, ze vektor nie je prazdny
+    //v pripade, ze by sa robot na bod nemohol dostat a chceli by sme mu dat nejaky medzibod tak sa prida pred neho (na zaciatok)
+    //do controllera stale bude vstupovat actual point (ten je stale updatovany v callbacku) a desired point (ten sa bude menit podla bodov vektora)
      
     TKobukiData robotdata;
     int datacounter;

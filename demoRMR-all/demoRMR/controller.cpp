@@ -28,14 +28,31 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
 
     double omega = kp_*error_distance + ki_*integral_;
     double omega_rot = kp_rot_*error_angle;
-    if(omega > MAX_SPEED){
+
+
+    if(abs(omega) > MAX_SPEED){
         clearIntegral();
-        omega = MAX_SPEED;
+        if(omega>0){
+            omega = MAX_SPEED;
+        }
+        else {
+            omega = -MAX_SPEED;
+        }
     }
-    if(omega_rot > MAX_SPEED/2)
-        omega_rot = MAX_SPEED/2;
-    ramp.compute(&omega, &omega_rot, 0.10); 
-    if(*trans_speed <= 10 && *rot_speed <= 1) //ak je spped mensai nez 10mm/sec i rotacna < 1 Rad
+    if(abs(omega_rot) > MAX_SPEED/8){
+        if (omega_rot > 0){
+            omega_rot = MAX_SPEED/8;
+        }
+        else {
+            omega_rot = -MAX_SPEED/8;
+        }
+    }
+
+
+
+
+    ramp.compute(&omega, &omega_rot, 0.10);
+    if(abs(*trans_speed) <= 10 && abs(*rot_speed) <= 1) //ak je spped mensai nez 10mm/sec i rotacna < 1 Rad
         ramp.clear_time();
     //std::cout << error_angle << " " << error_distance << " " << omega << std::endl;
     *rot_speed = static_cast<int> (omega_rot);

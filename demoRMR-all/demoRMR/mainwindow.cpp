@@ -209,26 +209,39 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
             int trans_speed, rot_speed, radius;
-            desired_point->setPoint(1000,500,0);
-            controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
-            if (rot_speed>=MAX_SPEED/4){
-                robot.setRotationSpeed(rot_speed);
+            if (!points_vector.empty()){
+                desired_point->setPoint(points_vector[0].getX(),points_vector[0].getY(),0);
             }
-            else if(rot_speed < 1){
+            else {
+                bruh = false;
+                return 0; //break maybe?
+            }
+            controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
+            if (abs(rot_speed)>=MAX_SPEED/8){
+                robot.setRotationSpeed(rot_speed);
+                // std::cout<< "ROTATION" << std::endl;
+                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
+            }
+            else if(abs(rot_speed) < 1){
                 robot.setTranslationSpeed(trans_speed);
+                // std::cout<< "TRANSLATION" << std::endl;
+                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
             }else{
                 radius = trans_speed/rot_speed;
                 cout << trans_speed << " " << rot_speed << endl;
                 robot.setArcSpeed(trans_speed,radius);
+                // std::cout<< "ARC" << std::endl;
+                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
             }
-            if(point->getDeltaX() < WITHIN_TOLERANCE && point->getDeltaY() < WITHIN_TOLERANCE && point->getDeltaTheta() < WITHIN_TOLERANCE_THETA){
-                bruh = false;
+            if(abs(actual_point->getX()-desired_point->getX()) < WITHIN_TOLERANCE && abs(actual_point->getY()-desired_point->getY()) < WITHIN_TOLERANCE){
                 controller->clearIntegral();
                 robot.setTranslationSpeed(0);
-                
+                if (!points_vector.empty()){
+                    //toto asi nemusi byt v ife - just to be sure
+                    points_vector.erase(points_vector.begin());
+                }
                 std::cout << "clear integral" << std::endl;
             }
-
         }
 
         ///toto neodporucam na nejake komplikovane struktury.signal slot robi kopiu dat. radsej vtedy posielajte
@@ -361,3 +374,29 @@ void MainWindow::getNewFrame()
 {
 
 }
+
+void MainWindow::addPointAtStart(Point p) {
+    points_vector.insert(points_vector.begin(),p);
+}
+
+void MainWindow::on_pushButton_10_clicked()
+{
+    // ui->lineEdit_5 is X
+    // ui->lineEdit_6 is Y
+    bool xOK = true,yOK = true;
+    double x = ui->lineEdit_5->text().toDouble(&xOK);
+    double y = ui->lineEdit_6->text().toDouble(&yOK);
+    if (xOK && yOK){
+        Point point(x*1000,y*1000,0*PI/180);
+        points_vector.push_back(point);
+        std::cout << "vector: ";
+        for (auto &p : points_vector) {
+            std::cout<< "X: " << p.getX() << " Y:" << p.getY() << std::endl;
+        }
+    }
+    else {
+        std::cout << "incorrect input!" << std::endl;
+    }
+
+}
+
