@@ -1,2 +1,0 @@
-/usr/bin/ar qc libqjoysticks.a CMakeFiles/qjoysticks.dir/qjoysticks_autogen/mocs_compilation.cpp.o CMakeFiles/qjoysticks.dir/src/QJoysticks.cpp.o CMakeFiles/qjoysticks.dir/src/QJoysticks/SDL_Joysticks.cpp.o CMakeFiles/qjoysticks.dir/src/QJoysticks/VirtualJoystick.cpp.o CMakeFiles/qjoysticks.dir/src/QJoysticks/Android_Joystick.cpp.o "CMakeFiles/qjoysticks.dir/qjoysticks_autogen/OICXTEDBQS/qrc_qjoysticks-res.cpp.o"
-/usr/bin/ranlib libqjoysticks.a
