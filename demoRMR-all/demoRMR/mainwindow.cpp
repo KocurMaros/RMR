@@ -2,6 +2,16 @@
 #include "ui_mainwindow.h"
 #include <QPainter>
 #include <math.h>
+
+#define WHEELBASE 0.23
+#define WHEELRADIUS 0.035
+#define TICKTOMETER 0.000085292090497737556558
+#define TICKTORAD 0.002436916871363930187454
+#define ENCODEROVERFLOW 65536
+
+#define WITHIN_TOLERANCE 5
+#define WITHIN_TOLERANCE_THETA 0.0174533
+
 ///TOTO JE DEMO PROGRAM...AK SI HO NASIEL NA PC V LABAKU NEPREPISUJ NIC,ALE SKOPIRUJ SI MA NIEKAM DO INEHO FOLDERA
 /// AK HO MAS Z GITU A ROBIS NA LABAKOVOM PC, TAK SI HO VLOZ DO FOLDERA KTORY JE JASNE ODLISITELNY OD TVOJICH KOLEGOV
 /// NASLEDNE V POLOZKE Projects SKONTROLUJ CI JE VYPNUTY shadow build...
@@ -9,6 +19,7 @@
 /// KED SA NAJBLIZSIE PUSTIS DO PRACE, SKONTROLUJ CI JE MIESTO TOHTO TEXTU TVOJ IDENTIFIKATOR
 /// AZ POTOM ZACNI ROBIT... AK TO NESPRAVIS, POJDU BODY DOLE... A NIE JEDEN,ALEBO DVA ALE BUDES RAD
 /// AK SA DOSTANES NA SKUSKU
+
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -23,15 +34,26 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
   //  timer = new QTimer(this);
 //    connect(timer, SIGNAL(timeout()), this, SLOT(getNewFrame()));
+    bruh = false;
     actIndex=-1;
     useCamera1=false;
+    first_run = true;
+    controller = make_shared<PIController>(1,0.01,10);
+    actual_point = make_shared<Point>(0,0,0);
+    set_point = make_shared<Point>(0,0,0);
+    desired_point = make_shared<Point>(0,0,0);
+    
+    robotX = 0;
+    robotY = 0;
+    robotFi = 0;
 
-
-
-
+    prev_x = 0;
+    prev_y = 0;
+    prev_gyro = 0;
+    prev_left = 0;
+    prev_right = 0;
     datacounter=0;
-
-
+    controller->clearIntegral();
 }
 
 MainWindow::~MainWindow()
@@ -91,32 +113,78 @@ void  MainWindow::setUiValues(double robotX,double robotY,double robotFi)
      ui->lineEdit_4->setText(QString::number(robotFi));
 }
 
+double MainWindow::calculateEncoderDelta(int prev, int actual) {
+    int delta;
+    if (actual > 60000 && prev < 5000) {
+        delta = actual - prev - ENCODEROVERFLOW;
+    }
+    else if (actual < 5000 && prev > 60000) {
+        delta = actual - prev + ENCODEROVERFLOW;
+    }
+    else {
+        delta = actual - prev;
+    }
+    return TICKTOMETER*delta;
+
+}
+
 ///toto je calback na data z robota, ktory ste podhodili robotu vo funkcii on_pushButton_9_clicked
 /// vola sa vzdy ked dojdu nove data z robota. nemusite nic riesit, proste sa to stane
 int MainWindow::processThisRobot(TKobukiData robotdata)
 {
-
+    if(first_run){
+        start_left = robotdata.EncoderLeft;
+        start_right = robotdata.EncoderRight;
+        start_gyro = robotdata.GyroAngle;
+        first_run = false;
+        prev_left = start_left;
+        prev_right = start_right;
+    }
+    
 
     ///tu mozete robit s datami z robota
     /// ale nic vypoctovo narocne - to iste vlakno ktore cita data z robota
     ///teraz tu posielam rychlosti na zaklade toho co setne joystick a vypisujeme data z robota(kazdy 5ty krat. ale mozete skusit aj castejsie). vyratajte si polohu. a vypiste spravnu
     /// tuto joystick cast mozete vklude vymazat,alebo znasilnit na vas regulator alebo ake mate pohnutky... kazdopadne, aktualne to blokuje gombiky cize tak
-    if(instance->count()>0)
-    {
-        if(forwardspeed==0 && rotationspeed!=0)
-            robot.setRotationSpeed(rotationspeed);
-        else if(forwardspeed!=0 && rotationspeed==0)
-            robot.setTranslationSpeed(forwardspeed);
-        else if((forwardspeed!=0 && rotationspeed!=0))
-            robot.setArcSpeed(forwardspeed,forwardspeed/rotationspeed);
-        else
-            robot.setTranslationSpeed(0);
+    // if(instance->count()>0)
+    // {
+    //     if(forwardspeed==0 && rotationspeed!=0)
+    //         robot.setRotationSpeed(rotationspeed);
+    //     else if(forwardspeed!=0 && rotationspeed==0)
+    //         robot.setTranslationSpeed(forwardspeed);
+    //     else if((forwardspeed!=0 && rotationspeed!=0))
+    //         robot.setArcSpeed(forwardspeed,forwardspeed/rotationspeed);
+    //     else
+    //         robot.setTranslationSpeed(0);
 
-    }
+    // }
 ///TU PISTE KOD... TOTO JE TO MIESTO KED NEVIETE KDE ZACAT,TAK JE TO NAOZAJ TU. AK AJ TAK NEVIETE, SPYTAJTE SA CVICIACEHO MA TU NATO STRING KTORY DA DO HLADANIA XXX
 
-    if(datacounter%5)
+
+
+  //  if(datacounter%5)
     {
+        delta_wheel_right = calculateEncoderDelta(prev_right, robotdata.EncoderRight); //TODO: vyhodit funkciu kvoli speed a dat kod napriamo sem? 
+        delta_wheel_left = calculateEncoderDelta(prev_left, robotdata.EncoderLeft);
+        robotFi = robotFi + (delta_wheel_right - delta_wheel_left) / WHEELBASE/PI*180.0;
+        if (robotFi >= 180){
+            robotFi = robotFi - 360;
+        }
+        else if (robotFi < -180) {
+            robotFi = robotFi + 360;
+        }
+        if (delta_wheel_left == delta_wheel_right) {
+            robotX = robotX + (delta_wheel_left + delta_wheel_right)/2*cos(robotFi*PI/180.0);
+            robotY = robotY + (delta_wheel_left + delta_wheel_right)/2*sin(robotFi*PI/180.0);
+        }
+        else {
+            robotX = robotX + (delta_wheel_right+delta_wheel_left)/(delta_wheel_right-delta_wheel_left)*WHEELBASE/2*(sin(robotFi*PI/180.0)-sin(prev_fi*PI/180.0));
+            robotY = robotY - (delta_wheel_right+delta_wheel_left)/(delta_wheel_right-delta_wheel_left)*WHEELBASE/2*(cos(robotFi*PI/180.0)-cos(prev_fi*PI/180.0));
+        }
+
+
+
+        // std::cout << "encoder: " << robotdata.EncoderLeft << std::endl;
 
         ///ak nastavite hodnoty priamo do prvkov okna,ako je to na tychto zakomentovanych riadkoch tak sa moze stat ze vam program padne
                 // ui->lineEdit_2->setText(QString::number(robotdata.EncoderRight));
@@ -126,13 +194,63 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 /// okno pocuva vo svojom slote a vasu premennu nastavi tak ako chcete. prikaz emit to presne takto spravi
                 /// viac o signal slotoch tu: https://doc.qt.io/qt-5/signalsandslots.html
         ///posielame sem nezmysli.. pohrajte sa nech sem idu zmysluplne veci
-        emit uiValuesChanged(robotdata.EncoderLeft,11,12);
+        emit uiValuesChanged(robotX,robotY,robotFi);
+        prev_right=robotdata.EncoderRight;
+        prev_left=robotdata.EncoderLeft;
+        prev_fi = robotFi;
+
+        // prev_x = robotX;
+        // prev_y = robotY;
+        // prev_gyro = robotFi;
+        // actual.x = 1000*robotX;
+        // actual.y = 1000*robotY;
+        // actual.theta = robotFi*PI/180.0;
+
+        actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
+        if (bruh) {
+            int trans_speed, rot_speed, radius;
+            if (!points_vector.empty()){
+                desired_point->setPoint(points_vector[0].getX(),points_vector[0].getY(),0);
+            }
+            else {
+                bruh = false;
+                return 0; //break maybe?
+            }
+            controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
+            if (abs(rot_speed)>=MAX_SPEED/8){
+                robot.setRotationSpeed(rot_speed);
+                // std::cout<< "ROTATION" << std::endl;
+                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
+            }
+            else if(abs(rot_speed) < 1){
+                robot.setTranslationSpeed(trans_speed);
+                // std::cout<< "TRANSLATION" << std::endl;
+                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
+            }else{
+                radius = trans_speed/rot_speed;
+                cout << trans_speed << " " << rot_speed << endl;
+                robot.setArcSpeed(trans_speed,radius);
+                // std::cout<< "ARC" << std::endl;
+                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
+            }
+            if(abs(actual_point->getX()-desired_point->getX()) < WITHIN_TOLERANCE && abs(actual_point->getY()-desired_point->getY()) < WITHIN_TOLERANCE){
+                controller->clearIntegral();
+                robot.setTranslationSpeed(0);
+                if (!points_vector.empty()){
+                    //toto asi nemusi byt v ife - just to be sure
+                    points_vector.erase(points_vector.begin());
+                }
+                std::cout << "clear integral" << std::endl;
+            }
+        }
+
         ///toto neodporucam na nejake komplikovane struktury.signal slot robi kopiu dat. radsej vtedy posielajte
         /// prazdny signal a slot bude vykreslovat strukturu (vtedy ju musite mat samozrejme ako member premmennu v mainwindow.ak u niekoho najdem globalnu premennu,tak bude cistit bludisko zubnou kefkou.. kefku dodam)
         /// vtedy ale odporucam pouzit mutex, aby sa vam nestalo ze budete pocas vypisovania prepisovat niekde inde
 
     }
     datacounter++;
+
 
     return 0;
 
@@ -226,9 +344,13 @@ robot.setRotationSpeed(-3.14159/2);
 void MainWindow::on_pushButton_4_clicked() //stop
 {
     robot.setTranslationSpeed(0);
+    bruh = false;
 
 }
-
+void MainWindow::on_pushButton_7_clicked() //arc left
+{
+    bruh = true;
+}
 
 
 
@@ -252,3 +374,29 @@ void MainWindow::getNewFrame()
 {
 
 }
+
+void MainWindow::addPointAtStart(Point p) {
+    points_vector.insert(points_vector.begin(),p);
+}
+
+void MainWindow::on_pushButton_10_clicked()
+{
+    // ui->lineEdit_5 is X
+    // ui->lineEdit_6 is Y
+    bool xOK = true,yOK = true;
+    double x = ui->lineEdit_5->text().toDouble(&xOK);
+    double y = ui->lineEdit_6->text().toDouble(&yOK);
+    if (xOK && yOK){
+        Point point(x*1000,y*1000,0*PI/180);
+        points_vector.push_back(point);
+        std::cout << "vector: ";
+        for (auto &p : points_vector) {
+            std::cout<< "X: " << p.getX() << " Y:" << p.getY() << std::endl;
+        }
+    }
+    else {
+        std::cout << "incorrect input!" << std::endl;
+    }
+
+}
+

@@ -28,13 +28,16 @@
 #include <iostream>
 #include <memory>
 
+
+
 class ROBOT_EXPORT Robot
 {
 public:
+    
     ~Robot();
     Robot(std::string ipaddressLaser="127.0.0.1",int laserportRobot=52999, int laserportMe=5299,std::function<int(LaserMeasurement)> &lascallback=do_nothing_laser,std::string ipaddressRobot="127.0.0.1",int robotportRobot=53000, int robotportMe=5300,std::function<int(TKobukiData)> &robcallback=do_nothing_robot);
 
-
+    
     //default functions.. please do not rewrite.. make your own callback
     static  std::function<int(TKobukiData)> do_nothing_robot;
     static std::function<int(LaserMeasurement)> do_nothing_laser;
@@ -57,6 +60,8 @@ public:
         robot_callback=callback;
         wasRobotSet=1;
     }
+    // void controller(Coords *actual, MovementsParam *param, Coords *desired, PI_controller *controller);
+    void PI_controller();
 
     void setTranslationSpeed(int mmpersec);
 
@@ -74,7 +79,7 @@ public:
     long double b = 0.23; // wheelbase distance in meters, from kobuki manual https://yujinrobot.github.io/kobuki/doxygen/enAppendixProtocolSpecification.html
 
 private:
-     std::promise<void> ready_promise;
+    std::promise<void> ready_promise;
     std::shared_future<void> readyFuture;
     int wasLaserSet;
     int wasRobotSet;

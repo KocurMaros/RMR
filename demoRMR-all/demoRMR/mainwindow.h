@@ -25,8 +25,18 @@
 #include "opencv2/videoio.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "robot.h"
-
 #include <QJoysticks.h>
+
+#include "controller.h"
+#include "point.h"
+#include "ramp.h"
+
+typedef struct
+{
+    int speed;
+    int radius;
+}MovementsParam;
+
 namespace Ui {
 class MainWindow;
 }
@@ -37,6 +47,9 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+    
+    MovementsParam param;
+
     bool useCamera1;
   //  cv::VideoCapture cap;
 
@@ -65,27 +78,69 @@ private slots:
     void on_pushButton_5_clicked();
 
     void on_pushButton_4_clicked();
+    void on_pushButton_7_clicked();
+
 
     void on_pushButton_clicked();
     void getNewFrame();
 
+    void on_pushButton_10_clicked();
+
 private:
 
+    void addPointAtStart(Point p);
+    double calculateEncoderDelta(int prev, int actual);
     //--skuste tu nic nevymazat... pridavajte co chcete, ale pri odoberani by sa mohol stat nejaky drobny problem, co bude vyhadzovat chyby
     Ui::MainWindow *ui;
-     void paintEvent(QPaintEvent *event);// Q_DECL_OVERRIDE;
-     int updateLaserPicture;
-     LaserMeasurement copyOfLaserData;
-     std::string ipaddress;
-     Robot robot;
-     TKobukiData robotdata;
-     int datacounter;
-     QTimer *timer;
+    void paintEvent(QPaintEvent *event);// Q_DECL_OVERRIDE;
+    int updateLaserPicture;
+    LaserMeasurement copyOfLaserData;
+    std::string ipaddress;
+    Robot robot;
 
-     QJoysticks *instance;
+    std::shared_ptr<PIController> controller;
+    std::shared_ptr<Point> actual_point;
+    std::shared_ptr<Point> set_point;
+    std::shared_ptr<Point> desired_point;
+    
 
-     double forwardspeed;//mm/s
-     double rotationspeed;//omega/s
+    std::vector<Point> points_vector;
+    //vektor bude mat v sebe body, ktore, ked ich budes pridavat manualne tak sa pridaju appendom nakoniec
+    //robot bude prechadzat bodmi tak, ze vzdy pojde na nulty bod vo vektore, akonahle sa tam dostane sa tento bod odstrani z vektora
+    //robot bude chodit na body, len v pripade, ze vektor nie je prazdny
+    //v pripade, ze by sa robot na bod nemohol dostat a chceli by sme mu dat nejaky medzibod tak sa prida pred neho (na zaciatok)
+    //do controllera stale bude vstupovat actual point (ten je stale updatovany v callbacku) a desired point (ten sa bude menit podla bodov vektora)
+     
+    TKobukiData robotdata;
+    int datacounter;
+    QTimer *timer;
+
+    QJoysticks *instance;
+
+    double forwardspeed;//mm/s
+    double rotationspeed;//omega/s
+
+    int prev_x;
+    int prev_y;
+    int prev_gyro;
+    bool first_run;
+
+    bool bruh;
+    int start_left;
+    int start_right;
+    int start_gyro;
+
+    int prev_left;
+    int prev_right;
+
+    double delta_wheel_left;
+    double delta_wheel_right;
+
+    double robotX;
+    double robotY;
+    double robotFi;
+    double prev_fi;
+
 public slots:
      void setUiValues(double robotX,double robotY,double robotFi);
 signals:
