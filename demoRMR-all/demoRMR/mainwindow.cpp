@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actIndex=-1;
     useCamera1=false;
     first_run = true;
-    controller = make_shared<PIController>(1,0.01,10);
+    controller = make_shared<PIController>(10,0.1,10);
     actual_point = make_shared<Point>(0,0,0);
     set_point = make_shared<Point>(0,0,0);
     desired_point = make_shared<Point>(0,0,0);

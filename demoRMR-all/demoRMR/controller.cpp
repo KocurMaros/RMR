@@ -49,12 +49,12 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
     }
 
 
-
-
-    ramp.compute(&omega, &omega_rot, 0.10);
-    if(abs(*trans_speed) <= 10 && abs(*rot_speed) <= 1) //ak je spped mensai nez 10mm/sec i rotacna < 1 Rad
-        ramp.clear_time();
-    //std::cout << error_angle << " " << error_distance << " " << omega << std::endl;
+    ramp.compute(&omega, &omega_rot, 0.01);
+    std::cout << omega << " " << omega_rot << " " << std::endl;
     *rot_speed = static_cast<int> (omega_rot);
     *trans_speed =static_cast<int> (omega);
+    if(abs(omega) <= 10 && abs(omega_rot) <= 1){ //ak je spped mensai nez 10mm/sec i rotacna < 1 Rad
+        ramp.clear_time();
+        std::cout << "clear time" << std::endl;
+    }
 }
