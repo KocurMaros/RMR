@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actual_point = make_shared<Point>(0,0,0);
     set_point = make_shared<Point>(0,0,0);
     desired_point = make_shared<Point>(0,0,0);
-    
+
     robotX = 0;
     robotY = 0;
     robotFi = 0;
@@ -54,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent) :
     prev_right = 0;
     datacounter=0;
     controller->clearIntegral();
+    first_test = false;
 }
 
 MainWindow::~MainWindow()
@@ -228,7 +229,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
             }else{
                 radius = trans_speed/rot_speed;
-                cout << trans_speed << " " << rot_speed << endl;
+                // cout << trans_speed << " " << rot_speed << endl;
                 robot.setArcSpeed(trans_speed,radius);
                 // std::cout<< "ARC" << std::endl;
                 // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;

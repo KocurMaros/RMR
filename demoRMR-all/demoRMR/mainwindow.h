@@ -31,6 +31,8 @@
 #include "point.h"
 #include "ramp.h"
 
+#include "mapping.h"
+#include "hash_map.h"
 typedef struct
 {
     int speed;
@@ -102,7 +104,6 @@ private:
     std::shared_ptr<Point> actual_point;
     std::shared_ptr<Point> set_point;
     std::shared_ptr<Point> desired_point;
-    
 
     std::vector<Point> points_vector;
     //vektor bude mat v sebe body, ktore, ked ich budes pridavat manualne tak sa pridaju appendom nakoniec
