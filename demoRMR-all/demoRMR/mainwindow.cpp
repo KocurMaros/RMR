@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actIndex=-1;
     useCamera1=false;
     first_run = true;
-    controller = make_shared<PIController>(10,0.1,10);
+    controller = make_shared<PIController>(10,0.1,1);
     actual_point = make_shared<Point>(0,0,0);
     set_point = make_shared<Point>(0,0,0);
     desired_point = make_shared<Point>(0,0,0);
@@ -208,7 +208,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
         actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
-            int trans_speed, rot_speed, radius;
+            double rot_speed;
+            int trans_speed, radius;
             if (!points_vector.empty()){
                 desired_point->setPoint(points_vector[0].getX(),points_vector[0].getY(),0);
             }
@@ -217,12 +218,12 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 return 0; //break maybe?
             }
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
-            if (abs(rot_speed)>=MAX_SPEED/8){
+            if (abs(rot_speed)>=MAX_SPEED_ROT/2){
                 robot.setRotationSpeed(rot_speed);
                 // std::cout<< "ROTATION" << std::endl;
                 // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
             }
-            else if(abs(rot_speed) < 1){
+            else if(abs(rot_speed) < PI/180){
                 robot.setTranslationSpeed(trans_speed);
                 // std::cout<< "TRANSLATION" << std::endl;
                 // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
