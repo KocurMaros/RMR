@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
     prev_left = 0;
     prev_right = 0;
     datacounter=0;
+    rot_only = false;
     controller->clearIntegral();
 }
 
@@ -218,23 +219,28 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 return 0; //break maybe?
             }
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
-            if (abs(rot_speed)>=MAX_SPEED_ROT/2){
+
+            if (abs(controller->error_angle) >= PI/4){
+                rot_only = true;
+            }
+            if (rot_only){
+                std::cout<< "ROTATION" << std::endl;
                 robot.setRotationSpeed(rot_speed);
-                // std::cout<< "ROTATION" << std::endl;
-                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
             }
             else if(abs(rot_speed) < PI/180){
                 robot.setTranslationSpeed(trans_speed);
-                // std::cout<< "TRANSLATION" << std::endl;
+                std::cout<< "TRANSLATION" << std::endl;
                 // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
             }else{
                 radius = trans_speed/rot_speed;
-                cout << trans_speed << " " << rot_speed << endl;
                 robot.setArcSpeed(trans_speed,radius);
-                // std::cout<< "ARC" << std::endl;
+                std::cout<< "ARC" << std::endl;
                 // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
             }
-            if(abs(actual_point->getX()-desired_point->getX()) < WITHIN_TOLERANCE && abs(actual_point->getY()-desired_point->getY()) < WITHIN_TOLERANCE){
+            if (rot_only && abs(controller->error_angle)<=PI/180){
+                rot_only = false;
+            }
+            if(abs(controller->error_distance) < WITHIN_TOLERANCE){
                 controller->clearIntegral();
                 robot.setTranslationSpeed(0);
                 if (!points_vector.empty()){

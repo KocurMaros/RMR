@@ -21,8 +21,8 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
     desired_theta = desired_point.getTheta();
 
 
-    double error_distance = sqrt(pow(desired_x - actual_x, 2) + pow(desired_y - actual_y, 2));
-    double error_angle = atan2(desired_y - actual_y, desired_x - actual_x);
+    error_distance = sqrt(pow(desired_x - actual_x, 2) + pow(desired_y - actual_y, 2));
+    error_angle = atan2(desired_y - actual_y, desired_x - actual_x);
     std::cout << "atan2 = " << error_angle << std::endl;
     error_angle = error_angle - actual_theta;
     std::cout << "actual = " << actual_theta << std::endl;
@@ -64,7 +64,7 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
     // std::cout << omega << " " << omega_rot << " " << std::endl;
     *rot_speed = omega_rot;
     *trans_speed =static_cast<int> (omega);
-    if(abs(omega) <= 10 && abs(omega_rot) <= 1){ //ak je spped mensai nez 10mm/sec i rotacna < 1 Rad
+    if(abs(omega) <= 10 && abs(omega_rot) <= PI/180*2){ //ak je spped mensai nez 10mm/sec i rotacna < 1 Rad
         ramp.clear_time();
         std::cout << "clear time" << std::endl;
     }
