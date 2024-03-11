@@ -17,3 +17,7 @@ void Ramp::clear_time(){
     if(current_speed_multiplier > 20.0)
         current_speed_multiplier = 0;
 }
+
+void Ramp::clear_time_hard(){
+    current_speed_multiplier = 0;
+}

@@ -10,6 +10,7 @@ public:
 
     void compute(double *speed, double *speed_rot, double change_speed);
     void clear_time();
+    void clear_time_hard();
 
 private:
     double current_speed_multiplier;

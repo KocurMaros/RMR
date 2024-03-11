@@ -6,8 +6,8 @@
 #include <math.h>
 #include "ramp.h"
 
-#define MAX_SPEED       400//mm/s
-#define MAX_SPEED_ROT   3.14//rad/s
+#define MAX_SPEED       200//mm/s
+#define MAX_SPEED_ROT   PI/4//rad/s
 class PIController {
 public:
      PIController(double kp, double ki, double kp_rot);
@@ -20,9 +20,10 @@ public:
     //                double actual_x,double actual_y, double actual_theta,
     //                double dt_, double &speed, double &radius);
     void clearIntegral() { integral_ = 0.0; }
-    void clearErrors() {error_angle = 0.0; error_distance = 0.0;}
-private:
+    void clearErrors() {error_angle = 0.0; error_distance = 0.0;} //prolly not even necessary lol
     Ramp ramp;
+
+private:
     double kp_;
     double kp_rot_;
     double ki_;

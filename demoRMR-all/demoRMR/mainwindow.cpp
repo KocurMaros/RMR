@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actIndex=-1;
     useCamera1=false;
     first_run = true;
-    controller = make_shared<PIController>(10,0.1,1);
+    controller = make_shared<PIController>(10,0.1,2);
     actual_point = make_shared<Point>(0,0,0);
     set_point = make_shared<Point>(0,0,0);
     desired_point = make_shared<Point>(0,0,0);
@@ -220,21 +220,25 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             }
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
 
-            if (abs(controller->error_angle) >= PI/4){
+            if (abs(controller->error_angle) >= PI/4 && !rot_only){
                 rot_only = true;
+                controller->ramp.clear_time_hard();
+                std::cout << "ONLY ROT: " << controller->error_angle << std::endl;
+                std::cout << "Actual Theta: " << actual_point->getTheta() << std::endl;
+                std::cout << "Desired Theta: " << atan2(desired_point->getY()-actual_point->getY(),desired_point->getX()-actual_point->getX()) << std::endl;
             }
             if (rot_only){
-                std::cout<< "ROTATION" << std::endl;
+                // std::cout<< "ROTATION" << std::endl;
                 robot.setRotationSpeed(rot_speed);
             }
             else if(abs(rot_speed) < PI/180){
                 robot.setTranslationSpeed(trans_speed);
-                std::cout<< "TRANSLATION" << std::endl;
+                // std::cout<< "TRANSLATION" << std::endl;
                 // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
             }else{
                 radius = trans_speed/rot_speed;
                 robot.setArcSpeed(trans_speed,radius);
-                std::cout<< "ARC" << std::endl;
+                // std::cout<< "ARC" << std::endl;
                 // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
             }
             if (rot_only && abs(controller->error_angle)<=PI/180){
