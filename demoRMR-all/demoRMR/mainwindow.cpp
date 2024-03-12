@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actIndex=-1;
     useCamera1=false;
     first_run = true;
-    controller = make_shared<PIController>(10,0.1,2);
+    controller = make_shared<PIController>(3,0.1,2);
     actual_point = make_shared<Point>(0,0,0);
     set_point = make_shared<Point>(0,0,0);
     desired_point = make_shared<Point>(0,0,0);
@@ -155,7 +155,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     //         robot.setTranslationSpeed(forwardspeed);
     //     else if((forwardspeed!=0 && rotationspeed!=0))
     //         robot.setArcSpeed(forwardspeed,forwardspeed/rotationspeed);
-    //     else
+    //     e-0.000741283lse
     //         robot.setTranslationSpeed(0);
 
     // }
@@ -209,6 +209,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
         actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
+            
             double rot_speed;
             int trans_speed, radius;
             if (!points_vector.empty()){
@@ -220,9 +221,22 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             }
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
 
+            if(abs(controller->error_distance) < WITHIN_TOLERANCE){
+                controller->clearIntegral();
+                robot.setTranslationSpeed(0);
+                controller->ramp.clear_time_hard();
+                if (!points_vector.empty()){
+                    //toto asi nemusi byt v ife - just to be sure
+                    points_vector.erase(points_vector.begin());
+                }
+                std::cout << "clear integral" << std::endl;
+                return 0;   
+            }
+
             if (abs(controller->error_angle) >= PI/4 && !rot_only){
                 rot_only = true;
                 controller->ramp.clear_time_hard();
+                controller->clearIntegral();
                 std::cout << "ONLY ROT: " << controller->error_angle << std::endl;
                 std::cout << "Actual Theta: " << actual_point->getTheta() << std::endl;
                 std::cout << "Desired Theta: " << atan2(desired_point->getY()-actual_point->getY(),desired_point->getX()-actual_point->getX()) << std::endl;
@@ -230,29 +244,28 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             if (rot_only){
                 // std::cout<< "ROTATION" << std::endl;
                 robot.setRotationSpeed(rot_speed);
-            }
-            else if(abs(rot_speed) < PI/180){
-                robot.setTranslationSpeed(trans_speed);
+            // }
+            // else if(abs(rot_speed) < PI/180){
+            //     robot.setTranslationSpeed(trans_speed);
                 // std::cout<< "TRANSLATION" << std::endl;
                 // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
             }else{
+                // if(rot_speed == 0){
+                //     rot_speed = 0.0001;
+                // }
                 radius = trans_speed/rot_speed;
+                if(radius > 32767)
+                    radius = 32767;
+                else if(radius < -32767)
+                    radius = -32767;
                 robot.setArcSpeed(trans_speed,radius);
-                // std::cout<< "ARC" << std::endl;
-                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
+                std::cout<< "ARC" << std::endl;
+                std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
             }
-            if (rot_only && abs(controller->error_angle)<=PI/180){
+            if (rot_only && abs(controller->error_angle)<=4*PI/180){
                 rot_only = false;
                 controller->ramp.clear_time_hard();
-            }
-            if(abs(controller->error_distance) < WITHIN_TOLERANCE){
                 controller->clearIntegral();
-                robot.setTranslationSpeed(0);
-                if (!points_vector.empty()){
-                    //toto asi nemusi byt v ife - just to be sure
-                    points_vector.erase(points_vector.begin());
-                }
-                std::cout << "clear integral" << std::endl;
             }
         }
 

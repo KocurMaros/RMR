@@ -25,7 +25,7 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
     error_angle = atan2(desired_y - actual_y, desired_x - actual_x);
     // std::cout << "atan2 = " << error_angle << std::endl;
     error_angle = error_angle - actual_theta;
-    // std::cout << "actual = " << actual_theta << std::endl;
+     std::cout << "actual = " << actual_theta <<" error "<<error_angle<< std::endl;
     // double error_angle = atan2(desired_.y - actual_.y, desired_.x - actual_.x);
 
     if (error_angle > PI) {
@@ -36,7 +36,7 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
     // std::cout << "error angle = " << error_angle << std::endl;
     integral_ = integral_ + error_distance*dt_;
 
-    double omega = kp_*error_distance + ki_*integral_;
+    double omega = kp_*error_distance/* + ki_*integral_*/;
     double omega_rot = kp_rot_*error_angle;
 
     // std::cout << "omega: " << omega << " omega_rot: " << omega_rot << std::endl;
@@ -51,19 +51,19 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
             omega = -MAX_SPEED;
         }
     }
-    if(abs(omega_rot) > MAX_SPEED_ROT){
+    if(abs(omega_rot) > MAX_SPEED_ROT/2){
         if (omega_rot > 0){
-            omega_rot = MAX_SPEED_ROT;
+            omega_rot = MAX_SPEED_ROT/2;
         }
         else {
-            omega_rot = -MAX_SPEED_ROT;
+            omega_rot = -MAX_SPEED_ROT/2;
         }
     }
 
 
     ramp.compute(&omega, &omega_rot, 0.01);
 
-    std::cout << "omega ramp: " << omega << " omega_rot ramp: " << omega_rot << std::endl;
+    // std::cout << "omega ramp: " << omega << " omega_rot ramp: " << omega_rot << std::endl;
 
     *rot_speed = omega_rot;
     *trans_speed =static_cast<int> (omega);
