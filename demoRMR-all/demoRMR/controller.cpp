@@ -63,7 +63,7 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
 
     ramp.compute(&omega, &omega_rot, 0.01);
 
-    // std::cout << "omega ramp: " << omega << " omega_rot ramp: " << omega_rot << std::endl;
+    std::cout << "omega ramp: " << omega << " omega_rot ramp: " << omega_rot << std::endl;
 
     *rot_speed = omega_rot;
     *trans_speed =static_cast<int> (omega);

@@ -14,7 +14,7 @@ void Ramp::compute(double *speed, double *speed_rot, double change_speed) {
     *speed_rot *= current_speed_multiplier/2.0;
 }
 void Ramp::clear_time(){
-    if(current_speed_multiplier > 20.0)
+    if(current_speed_multiplier > 50.0)
         current_speed_multiplier = 0;
 }
 

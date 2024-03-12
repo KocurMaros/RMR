@@ -9,7 +9,7 @@
 #define TICKTORAD 0.002436916871363930187454
 #define ENCODEROVERFLOW 65536
 
-#define WITHIN_TOLERANCE 5
+#define WITHIN_TOLERANCE 30
 #define WITHIN_TOLERANCE_THETA 0.0174533
 
 ///TOTO JE DEMO PROGRAM...AK SI HO NASIEL NA PC V LABAKU NEPREPISUJ NIC,ALE SKOPIRUJ SI MA NIEKAM DO INEHO FOLDERA
@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-    ipaddress="127.0.0.1";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
   //  cap.open("http://192.168.1.11:8000/stream.mjpg");
     ui->setupUi(this);
     datacounter=0;
@@ -243,6 +243,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             }
             if (rot_only && abs(controller->error_angle)<=PI/180){
                 rot_only = false;
+                controller->ramp.clear_time_hard();
             }
             if(abs(controller->error_distance) < WITHIN_TOLERANCE){
                 controller->clearIntegral();

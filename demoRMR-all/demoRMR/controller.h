@@ -6,8 +6,8 @@
 #include <math.h>
 #include "ramp.h"
 
-#define MAX_SPEED       200//mm/s
-#define MAX_SPEED_ROT   PI/4//rad/s
+#define MAX_SPEED       400//mm/s
+#define MAX_SPEED_ROT   PI/2//rad/s
 class PIController {
 public:
      PIController(double kp, double ki, double kp_rot);
