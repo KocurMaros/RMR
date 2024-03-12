@@ -1,6 +1,6 @@
 #include "hash_map.h"
 
-Hash_map::Hash_map(double x, double y)
+Hash_map::Hash_map(double x, double y, double theta)
 {
     for (uint8_t i = 0; i < 11; i++)
     {
@@ -36,13 +36,15 @@ void Hash_map::update_map(Point point, bool occupied){
             break;
         }
     }
-    if (occupied)
-    {
-        hash_map[i][j] = 1;
-    }
-    else
-    {
-        hash_map[i][j] = 0;
+    if(i < 11 && j < 11){
+        if (occupied)
+        {
+            hash_map[i][j] = 1;
+        }
+        else
+        {
+            hash_map[i][j] = 0;
+        }
     }
 
 }

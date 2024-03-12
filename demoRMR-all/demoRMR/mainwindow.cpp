@@ -54,7 +54,6 @@ MainWindow::MainWindow(QWidget *parent) :
     prev_right = 0;
     datacounter=0;
     controller->clearIntegral();
-    first_test = false;
 }
 
 MainWindow::~MainWindow()
@@ -206,7 +205,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         // actual.x = 1000*robotX;
         // actual.y = 1000*robotY;
         // actual.theta = robotFi*PI/180.0;
-
+        Mapping maps = Mapping();
         actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
             int trans_speed, rot_speed, radius;
@@ -242,6 +241,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     points_vector.erase(points_vector.begin());
                 }
                 std::cout << "clear integral" << std::endl;
+                maps.Gmapping(copyOfLaserData, robotX*100, robotY*100);
             }
         }
 
