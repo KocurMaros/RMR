@@ -142,6 +142,8 @@ private:
     double robotFi;
     double prev_fi;
 
+    bool rot_only;
+
 public slots:
      void setUiValues(double robotX,double robotY,double robotFi);
 signals:

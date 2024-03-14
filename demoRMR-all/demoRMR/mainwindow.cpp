@@ -9,7 +9,7 @@
 #define TICKTORAD 0.002436916871363930187454
 #define ENCODEROVERFLOW 65536
 
-#define WITHIN_TOLERANCE 5
+#define WITHIN_TOLERANCE 30
 #define WITHIN_TOLERANCE_THETA 0.0174533
 
 ///TOTO JE DEMO PROGRAM...AK SI HO NASIEL NA PC V LABAKU NEPREPISUJ NIC,ALE SKOPIRUJ SI MA NIEKAM DO INEHO FOLDERA
@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-    ipaddress="127.0.0.1";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
   //  cap.open("http://192.168.1.11:8000/stream.mjpg");
     ui->setupUi(this);
     datacounter=0;
@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actIndex=-1;
     useCamera1=false;
     first_run = true;
-    controller = make_shared<PIController>(10,0.1,10);
+    controller = make_shared<PIController>(3,0.1,2);
     actual_point = make_shared<Point>(0,0,0);
     set_point = make_shared<Point>(0,0,0);
     desired_point = make_shared<Point>(0,0,0);
@@ -53,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
     prev_left = 0;
     prev_right = 0;
     datacounter=0;
+    rot_only = false;
     controller->clearIntegral();
 }
 
@@ -78,7 +79,7 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
     if(useCamera1==true && actIndex>-1)/// ak zobrazujem data z kamery a aspon niektory frame vo vectore je naplneny
     {
-        std::cout<<actIndex<<std::endl;
+        // std::cout<<actIndex<<std::endl;
         QImage image = QImage((uchar*)frame[actIndex].data, frame[actIndex].cols, frame[actIndex].rows, frame[actIndex].step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
         painter.drawImage(rect,image.rgbSwapped());
     }
@@ -154,7 +155,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     //         robot.setTranslationSpeed(forwardspeed);
     //     else if((forwardspeed!=0 && rotationspeed!=0))
     //         robot.setArcSpeed(forwardspeed,forwardspeed/rotationspeed);
-    //     else
+    //     e-0.000741283lse
     //         robot.setTranslationSpeed(0);
 
     // }
@@ -208,7 +209,9 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         Mapping maps = Mapping();
         actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
-            int trans_speed, rot_speed, radius;
+            
+            double rot_speed;
+            int trans_speed, radius;
             if (!points_vector.empty()){
                 desired_point->setPoint(points_vector[0].getX(),points_vector[0].getY(),0);
             }
@@ -217,31 +220,53 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 return 0; //break maybe?
             }
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
-            if (abs(rot_speed)>=MAX_SPEED/8){
-                robot.setRotationSpeed(rot_speed);
-                // std::cout<< "ROTATION" << std::endl;
-                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
-            }
-            else if(abs(rot_speed) < 1){
-                robot.setTranslationSpeed(trans_speed);
-                // std::cout<< "TRANSLATION" << std::endl;
-                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
-            }else{
-                radius = trans_speed/rot_speed;
-                // cout << trans_speed << " " << rot_speed << endl;
-                robot.setArcSpeed(trans_speed,radius);
-                // std::cout<< "ARC" << std::endl;
-                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
-            }
-            if(abs(actual_point->getX()-desired_point->getX()) < WITHIN_TOLERANCE && abs(actual_point->getY()-desired_point->getY()) < WITHIN_TOLERANCE){
+
+            if(abs(controller->error_distance) < WITHIN_TOLERANCE){
                 controller->clearIntegral();
                 robot.setTranslationSpeed(0);
+                controller->ramp.clear_time_hard();
                 if (!points_vector.empty()){
                     //toto asi nemusi byt v ife - just to be sure
                     points_vector.erase(points_vector.begin());
                 }
                 std::cout << "clear integral" << std::endl;
-                maps.Gmapping(copyOfLaserData, robotX*100, robotY*100);
+                maps.Gmapping(copyOfLaserData, robotX*100, robotY*100, robotFi);
+                return 0;   
+            }
+
+            if (abs(controller->error_angle) >= PI/4 && !rot_only){
+                rot_only = true;
+                controller->ramp.clear_time_hard();
+                controller->clearIntegral();
+                std::cout << "ONLY ROT: " << controller->error_angle << std::endl;
+                std::cout << "Actual Theta: " << actual_point->getTheta() << std::endl;
+                std::cout << "Desired Theta: " << atan2(desired_point->getY()-actual_point->getY(),desired_point->getX()-actual_point->getX()) << std::endl;
+            }
+            if (rot_only){
+                // std::cout<< "ROTATION" << std::endl;
+                robot.setRotationSpeed(rot_speed);
+            // }
+            // else if(abs(rot_speed) < PI/180){
+            //     robot.setTranslationSpeed(trans_speed);
+                // std::cout<< "TRANSLATION" << std::endl;
+                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
+            }else{
+                // if(rot_speed == 0){
+                //     rot_speed = 0.0001;
+                // }
+                radius = trans_speed/rot_speed;
+                if(radius > 32767)
+                    radius = 32767;
+                else if(radius < -32767)
+                    radius = -32767;
+                robot.setArcSpeed(trans_speed,radius);
+                std::cout<< "ARC" << std::endl;
+                std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
+            }
+            if (rot_only && abs(controller->error_angle)<=4*PI/180){
+                rot_only = false;
+                controller->ramp.clear_time_hard();
+                controller->clearIntegral();
             }
         }
 
@@ -298,7 +323,7 @@ void MainWindow::on_pushButton_9_clicked() //start button
     robot.setLaserParameters(ipaddress,52999,5299,/*[](LaserMeasurement dat)->int{std::cout<<"som z lambdy callback"<<std::endl;return 0;}*/std::bind(&MainWindow::processThisLidar,this,std::placeholders::_1));
     robot.setRobotParameters(ipaddress,53000,5300,std::bind(&MainWindow::processThisRobot,this,std::placeholders::_1));
     //---simulator ma port 8889, realny robot 8000
-    robot.setCameraParameters("http://"+ipaddress+":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+    robot.setCameraParameters("http://"+ipaddress+":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
 
     ///ked je vsetko nasetovane tak to tento prikaz spusti (ak nieco nieje setnute,tak to normalne nenastavi.cize ak napr nechcete kameru,vklude vsetky info o nej vymazte)
     robot.robotStart();
@@ -320,13 +345,13 @@ void MainWindow::on_pushButton_9_clicked() //start button
 void MainWindow::on_pushButton_2_clicked() //forward
 {
     //pohyb dopredu
-    robot.setTranslationSpeed(500);
+    robot.setTranslationSpeed(200);
 
 }
 
 void MainWindow::on_pushButton_3_clicked() //back
 {
-    robot.setTranslationSpeed(-250);
+    robot.setTranslationSpeed(-200);
 
 }
 

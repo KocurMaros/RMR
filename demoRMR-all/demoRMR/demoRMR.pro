@@ -83,11 +83,15 @@ INCLUDEPATH += /usr/local/include/opencv4/
 SOURCES += main.cpp\
         mainwindow.cpp\
         controller.cpp\
-        ramp.cpp
+        ramp.cpp\
+        mapping.cpp\
+        hash_map.cpp
 
 HEADERS  += mainwindow.h\
         point.h\
         controller.h\
-        ramp.h
+        ramp.h\
+        mapping.h\
+        hash_map.h
 
 FORMS    += mainwindow.ui
