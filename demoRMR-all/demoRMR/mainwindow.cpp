@@ -54,7 +54,11 @@ MainWindow::MainWindow(QWidget *parent) :
     prev_right = 0;
     datacounter=0;
     rot_only = false;
+    line_following = false;
+    trajectory_clear = true;
     controller->clearIntegral();
+    shortest_distance_to_goal = 0;
+    current_distance_to_goal = 0;
 }
 
 MainWindow::~MainWindow()
@@ -217,8 +221,10 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             }
             else {
                 bruh = false;
-                return 0; //break maybe?
+                return 0;
             }
+            //toto vzdy nastavi ciel, ak je vo vektore bodov aspon jeden bod
+
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
 
             if(abs(controller->error_distance) < WITHIN_TOLERANCE){
@@ -234,6 +240,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             }
 
             if (abs(controller->error_angle) >= PI/4 && !rot_only){
+                //ak je uhol moc velky nastavi sa flag na rotaciu na mieste
                 rot_only = true;
                 controller->ramp.clear_time_hard();
                 controller->clearIntegral();
@@ -241,8 +248,9 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 std::cout << "Actual Theta: " << actual_point->getTheta() << std::endl;
                 std::cout << "Desired Theta: " << atan2(desired_point->getY()-actual_point->getY(),desired_point->getX()-actual_point->getX()) << std::endl;
             }
+
             if (rot_only){
-                // std::cout<< "ROTATION" << std::endl;
+                //ROTATION
                 robot.setRotationSpeed(rot_speed);
             // }
             // else if(abs(rot_speed) < PI/180){
@@ -261,9 +269,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 robot.setArcSpeed(trans_speed,radius);
                 std::cout<< "ARC" << std::endl;
                 std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
-            }
-            if (rot_only && abs(controller->error_angle)<=4*PI/180){
-                rot_only = false;
                 controller->ramp.clear_time_hard();
                 controller->clearIntegral();
             }
@@ -372,7 +377,7 @@ void MainWindow::on_pushButton_4_clicked() //stop
     bruh = false;
 
 }
-void MainWindow::on_pushButton_7_clicked() //arc left
+void MainWindow::on_pushButton_7_clicked()
 {
     bruh = true;
 }

@@ -143,6 +143,11 @@ private:
 
     bool rot_only;
 
+    bool line_following;
+    bool trajectory_clear;
+    double shortest_distance_to_goal;
+    double current_distance_to_goal;
+
 public slots:
      void setUiValues(double robotX,double robotY,double robotFi);
 signals:
