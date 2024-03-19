@@ -2,14 +2,14 @@
 
 Hash_map::Hash_map(double x, double y, double theta)
 {
-    for (uint8_t i = 0; i < 11; i++)
+    for (uint8_t i = 0; i < map_dimension; i++)
     {
         std::vector<Point> row;
         std::vector<uint8_t> row_hash;
-        for (uint8_t j = 0; j < 11; j++)
+        for (uint8_t j = 0; j < map_dimension; j++)
         {
             row_hash.push_back(0);
-            row.push_back(Point(x + (i - 5) * square_dimension, y + (j - 5) * square_dimension, 0));
+            row.push_back(Point(x + (i - (map_dimension-1)/2) * square_dimension, y + (j - (map_dimension-1)/2) * square_dimension, 0));
         }
         hash_map.push_back(row_hash);
         coordinates.push_back(row);
@@ -22,21 +22,21 @@ void Hash_map::update_map(Point point, bool occupied){
     int y = point.getY();
     int i = 0;
     int j = 0;
-    for (i = 0; i < 11; i++)
+    for (i = 0; i < map_dimension; i++)
     {
         if (coordinates[i][0].getX() < x && coordinates[i + 1][0].getX() > x)
         {
             break;
         }
     }
-    for (j = 0; j < 11; j++)
+    for (j = 0; j < map_dimension; j++)
     {
         if (coordinates[0][j].getY() < y && coordinates[0][j + 1].getY() > y)
         {
             break;
         }
     }
-    if(i < 11 && j < 11){
+    if(i < map_dimension && j < map_dimension){
         if (occupied)
         {
             hash_map[i][j] = 1;

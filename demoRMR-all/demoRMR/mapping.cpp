@@ -42,11 +42,27 @@ Hash_map create_map(LaserMeasurement laser_data, double robotX, double robotY, d
         obstacle_x = robotX -  distance * cos(deg2rad(angle));
         obstacle_y = robotY -  distance * sin(deg2rad(angle));
         // std::cout << "obstacle_x: " << obstacle_x << " obstacle_y: " << obstacle_y << std::endl;
-        if(obstacle_x <= (robotX+50) && obstacle_x >= (robotX-50) && obstacle_y <= (robotY+50) && obstacle_y >= (robotY-50)){
+        if(obstacle_x <= (robotX+150) && obstacle_x >= (robotX-150) && obstacle_y <= (robotY+150) && obstacle_y >= (robotY-150)){
             // std::cout << std::endl << std::endl;
+            // std::cout << "obstacle_x: " << obstacle_x << " obstacle_y: " << obstacle_y << "blyyaat " << laser_data.Data[i].scanAngle <<  std::endl;
             Point point = Point(obstacle_x, obstacle_y, 0);
             new_map.update_map(point, true);
-        }
+        }else{
+            // if data are outside first hash map we need to create new one
+            // Calculate the new map's center position
+            double newCenterX = robotX + distance * cos(deg2rad(angle));
+            double newCenterY = robotY + distance * sin(deg2rad(angle));
+
+            // Create a new map with the shifted center position
+            Hash_map new_map = Hash_map(newCenterX, newCenterY, robotTheta);
+
+            // Update the map with the obstacle point
+            Point point = Point(obstacle_x, obstacle_y, 0);
+            new_map.update_map(point, true);
+
+            // Push the new map to the map vector
+            map_vector.push_back(new_map);
+            }
     }
     return new_map;
 }
@@ -77,6 +93,8 @@ void Mapping::Gmapping(LaserMeasurement laser_data, double robotX, double robotY
     // std::cout << "Next position: " << next_position.getX() << " " << next_position.getY() << std::endl;
     // go_to_point(next_position);
     
+    std::cout << std::fixed;
+    std::cout << std::setprecision(1);
 
     for(size_t i = 0; i < map_vector.size(); i++){
         std::vector<std::vector<uint8_t>> map = map_vector[i].get_hash_map();
@@ -87,13 +105,13 @@ void Mapping::Gmapping(LaserMeasurement laser_data, double robotX, double robotY
                     std::cout << "X ";
                 }
                 else{
-                    std::cout << "0 ";
+                    std::cout << "  ";
                 }
             }
-            // std::cout << "   ";
-            // for(size_t k = 0; k < coordinates[j].size(); k++){
-            //     std::cout << "[" << coordinates[j][k].getX() << "," << coordinates[j][k].getY() << "]";
-            // }
+            std::cout << "   ";
+            for(size_t k = 0; k < coordinates[j].size(); k++){
+                std::cout << "[" << coordinates[j][k].getX() << "," << coordinates[j][k].getY() << "]";
+            }
             std::cout << std::endl;
         }
     }

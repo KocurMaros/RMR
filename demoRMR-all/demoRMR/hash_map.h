@@ -9,6 +9,7 @@ class Hash_map
 {
 private:
     uint8_t square_dimension = 10; //10x10cm square
+    uint8_t map_dimension = 31; // 60x60 squares
     std::vector<std::vector<uint8_t>> hash_map; // 0 free 1 occupied
     std::vector<std::vector<Point>> coordinates;  // middle is 5 and 5
 public:

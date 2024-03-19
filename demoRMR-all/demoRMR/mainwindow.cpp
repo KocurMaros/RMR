@@ -229,7 +229,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     //toto asi nemusi byt v ife - just to be sure
                     points_vector.erase(points_vector.begin());
                 }
-                std::cout << "clear integral" << std::endl;
+                // std::cout << "clear integral" << std::endl;
                 maps.Gmapping(copyOfLaserData, robotX*100, robotY*100, robotFi);
                 return 0;   
             }
@@ -238,9 +238,9 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 rot_only = true;
                 controller->ramp.clear_time_hard();
                 controller->clearIntegral();
-                std::cout << "ONLY ROT: " << controller->error_angle << std::endl;
-                std::cout << "Actual Theta: " << actual_point->getTheta() << std::endl;
-                std::cout << "Desired Theta: " << atan2(desired_point->getY()-actual_point->getY(),desired_point->getX()-actual_point->getX()) << std::endl;
+                // std::cout << "ONLY ROT: " << controller->error_angle << std::endl;
+                // std::cout << "Actual Theta: " << actual_point->getTheta() << std::endl;
+                // std::cout << "Desired Theta: " << atan2(desired_point->getY()-actual_point->getY(),desired_point->getX()-actual_point->getX()) << std::endl;
             }
             if (rot_only){
                 // std::cout<< "ROTATION" << std::endl;
@@ -260,8 +260,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 else if(radius < -32767)
                     radius = -32767;
                 robot.setArcSpeed(trans_speed,radius);
-                std::cout<< "ARC" << std::endl;
-                std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
+                // std::cout<< "ARC" << std::endl;
+                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
             }
             if (rot_only && abs(controller->error_angle)<=4*PI/180){
                 rot_only = false;
@@ -323,8 +323,10 @@ void MainWindow::on_pushButton_9_clicked() //start button
     robot.setLaserParameters(ipaddress,52999,5299,/*[](LaserMeasurement dat)->int{std::cout<<"som z lambdy callback"<<std::endl;return 0;}*/std::bind(&MainWindow::processThisLidar,this,std::placeholders::_1));
     robot.setRobotParameters(ipaddress,53000,5300,std::bind(&MainWindow::processThisRobot,this,std::placeholders::_1));
     //---simulator ma port 8889, realny robot 8000
-    robot.setCameraParameters("http://"+ipaddress+":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
-
+    if(ipaddress=="127.0.0.1")
+        robot.setCameraParameters("http://"+ipaddress+":8889/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
+    else
+        robot.setCameraParameters("http://"+ipaddress+":8000/stream.mjpg",std::bind(&MainWindow::processThisCamera,this,std::placeholders::_1));
     ///ked je vsetko nasetovane tak to tento prikaz spusti (ak nieco nieje setnute,tak to normalne nenastavi.cize ak napr nechcete kameru,vklude vsetky info o nej vymazte)
     robot.robotStart();
 
