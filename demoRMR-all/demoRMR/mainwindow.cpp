@@ -3,7 +3,9 @@
 #include <QPainter>
 #include <math.h>
 
-#define WHEELBASE 0.23
+
+#define WHEELBASE 0.23 // [m]
+#define CRITICAL_DISTANCE 0.2 //[m]
 #define WHEELRADIUS 0.035
 #define TICKTOMETER 0.000085292090497737556558
 #define TICKTORAD 0.002436916871363930187454
