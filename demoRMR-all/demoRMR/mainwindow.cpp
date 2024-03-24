@@ -5,7 +5,6 @@
 
 
 #define WHEELBASE 0.23 // [m]
-#define CRITICAL_DISTANCE 0.2 //[m]
 #define WHEELRADIUS 0.035
 #define TICKTOMETER 0.000085292090497737556558
 #define TICKTORAD 0.002436916871363930187454
@@ -429,6 +428,17 @@ void MainWindow::on_pushButton_10_clicked()
     else {
         std::cout << "incorrect input!" << std::endl;
     }
+
+}
+
+
+void MainWindow::on_pushButton_11_clicked()
+{
+    std::cout << collision_detection.isObstacleInPath(1,0,180,1) << std::endl;
+    std::cout << collision_detection.isObstacleInPath(1,180,180,1) << std::endl;
+    std::cout << collision_detection.isObstacleInPath(1.5,180,180,1) << std::endl;
+    std::cout << collision_detection.isObstacleInPath(1.2,180,180,1) << std::endl;
+    std::cout << collision_detection.isObstacleInPath(1.21,180,180,1) << std::endl;
 
 }
 

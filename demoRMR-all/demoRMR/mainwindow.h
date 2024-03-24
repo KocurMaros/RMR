@@ -5,6 +5,7 @@
 #include <QTimer>
 #ifdef _WIN32
 #include<windows.h>
+#include "collision_detection.h"
 #endif
 #include<iostream>
 //#include<arpa/inet.h>
@@ -86,6 +87,8 @@ private slots:
 
     void on_pushButton_10_clicked();
 
+    void on_pushButton_11_clicked();
+
 private:
 
     void addPointAtStart(Point p);
@@ -102,6 +105,7 @@ private:
     std::shared_ptr<Point> actual_point;
     std::shared_ptr<Point> set_point;
     std::shared_ptr<Point> desired_point;
+    CollisionDetection collision_detection;
     
 
     std::vector<Point> points_vector;

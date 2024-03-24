@@ -1,10 +1,9 @@
-#include <math.h>
 #include "collision_detection.h"
 
 #define CRITICAL_DISTANCE 0.2 //[m]
 
 
-bool isObstacleInPath(double scanDistance, double scanAngle, double zoneAngle, double zoneDistance) {
+bool CollisionDetection::isObstacleInPath(double scanDistance, double scanAngle, double zoneAngle, double zoneDistance) {
     //distances su v metroch
     //vsetky vstupy su v STUPNOCH
     //zoneAngle je relativny od osi robota lavotocivy, -180 az 180, scanAngle - nula je vpredu robota, pravotocivy ide od 0 od 360
@@ -21,12 +20,17 @@ bool isObstacleInPath(double scanDistance, double scanAngle, double zoneAngle, d
     else if (errorAngle < -180) errorAngle += 360;
 
 
+    //vypocet ci je prekazka v ceste, ak je scanDistance 0 - v max range lidaru nie je objekt a teda neni tam prekazka
+    //taktiez tam neni prekazka, ked je v lidare nieco dalej ako je kriticka vzdialenost
     if (scanDistance!=0.0 && errorAngle<=90 && errorAngle >=-90) {
         //TODO: nahrad za PI
-        double maxDistance = sqrt(pow(zoneDistance,2)+pow(CRITICAL_DISTANCE,2));
-        double scanCritical = maxDistance;
+        double maxDistance = sqrt(pow(zoneDistance+CRITICAL_DISTANCE,2)+pow(CRITICAL_DISTANCE,2));
+        double scanCritical;
         if (errorAngle != 0.0){
             scanCritical = CRITICAL_DISTANCE / sin(fabs(errorAngle) * 3.14 / 180);
+        }
+        else {
+            scanCritical = zoneDistance+CRITICAL_DISTANCE;
         }
 
         if (scanCritical > maxDistance){
