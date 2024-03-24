@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-    ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    ipaddress="127.0.0.1";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
   //  cap.open("http://192.168.1.11:8000/stream.mjpg");
     ui->setupUi(this);
     datacounter=0;
@@ -214,7 +214,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
         actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
-            
             double rot_speed;
             int trans_speed, radius;
             if (!points_vector.empty()){
@@ -227,6 +226,12 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             //toto vzdy nastavi ciel, ak je vo vektore bodov aspon jeden bod
 
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
+
+            if(isThereObstacleInZone()){
+                std::cout << "COLLISION DETECTED!" << std::endl;
+                robot.setTranslationSpeed(0);
+                return 0;
+            }
 
             if(abs(controller->error_distance) < WITHIN_TOLERANCE){
                 controller->clearIntegral();
@@ -270,6 +275,9 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 robot.setArcSpeed(trans_speed,radius);
                 std::cout<< "ARC" << std::endl;
                 std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
+            }
+            if (rot_only && abs(controller->error_angle)<=4*PI/180){
+                rot_only = false;
                 controller->ramp.clear_time_hard();
                 controller->clearIntegral();
             }
@@ -431,14 +439,17 @@ void MainWindow::on_pushButton_10_clicked()
 
 }
 
+bool MainWindow::isThereObstacleInZone() {
+    for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++){
+        if(collision_detection.isObstacleInPath(copyOfLaserData.Data[k].scanDistance/1000.0,copyOfLaserData.Data[k].scanAngle,controller->error_angle/PI*180,controller->error_distance/1000.0)){
+            return true;
+        }
+    }
+    return false;
+}
 
 void MainWindow::on_pushButton_11_clicked()
 {
-    std::cout << collision_detection.isObstacleInPath(1,0,180,1) << std::endl;
-    std::cout << collision_detection.isObstacleInPath(1,180,180,1) << std::endl;
-    std::cout << collision_detection.isObstacleInPath(1.5,180,180,1) << std::endl;
-    std::cout << collision_detection.isObstacleInPath(1.2,180,180,1) << std::endl;
-    std::cout << collision_detection.isObstacleInPath(1.21,180,180,1) << std::endl;
 
 }
 

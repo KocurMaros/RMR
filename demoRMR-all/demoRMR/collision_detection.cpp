@@ -1,6 +1,7 @@
 #include "collision_detection.h"
-
+#define PI          3.14159 /* pi */
 #define CRITICAL_DISTANCE 0.2 //[m]
+#include<iostream>
 
 
 bool CollisionDetection::isObstacleInPath(double scanDistance, double scanAngle, double zoneAngle, double zoneDistance) {
@@ -27,7 +28,7 @@ bool CollisionDetection::isObstacleInPath(double scanDistance, double scanAngle,
         double maxDistance = sqrt(pow(zoneDistance+CRITICAL_DISTANCE,2)+pow(CRITICAL_DISTANCE,2));
         double scanCritical;
         if (errorAngle != 0.0){
-            scanCritical = CRITICAL_DISTANCE / sin(fabs(errorAngle) * 3.14 / 180);
+            scanCritical = CRITICAL_DISTANCE / sin(fabs(errorAngle) * PI / 180);
         }
         else {
             scanCritical = zoneDistance+CRITICAL_DISTANCE;
