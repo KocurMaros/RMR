@@ -104,8 +104,9 @@ private:
     std::shared_ptr<Point> actual_point;
     std::shared_ptr<Point> set_point;
     std::shared_ptr<Point> desired_point;
-
     std::vector<Point> points_vector;
+
+    std::shared_ptr<Mapping> maps;
     //vektor bude mat v sebe body, ktore, ked ich budes pridavat manualne tak sa pridaju appendom nakoniec
     //robot bude prechadzat bodmi tak, ze vzdy pojde na nulty bod vo vektore, akonahle sa tam dostane sa tento bod odstrani z vektora
     //robot bude chodit na body, len v pripade, ze vektor nie je prazdny
@@ -141,7 +142,7 @@ private:
     double robotY;
     double robotFi;
     double prev_fi;
-
+    
     bool rot_only;
 
 public slots:

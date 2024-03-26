@@ -28,7 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-    ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    // ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    ipaddress="127.0.0.1";
   //  cap.open("http://192.168.1.11:8000/stream.mjpg");
     ui->setupUi(this);
     datacounter=0;
@@ -42,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actual_point = make_shared<Point>(0,0,0);
     set_point = make_shared<Point>(0,0,0);
     desired_point = make_shared<Point>(0,0,0);
-
+    maps = make_shared<Mapping>();
     robotX = 0;
     robotY = 0;
     robotFi = 0;
@@ -55,6 +56,7 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
     rot_only = false;
     controller->clearIntegral();
+    
 }
 
 MainWindow::~MainWindow()
@@ -206,7 +208,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         // actual.x = 1000*robotX;
         // actual.y = 1000*robotY;
         // actual.theta = robotFi*PI/180.0;
-        Mapping maps = Mapping();
+        
         actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
             
@@ -230,7 +232,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     points_vector.erase(points_vector.begin());
                 }
                 // std::cout << "clear integral" << std::endl;
-                maps.Gmapping(copyOfLaserData, robotX*100, robotY*100, robotFi);
+                maps->Gmapping(copyOfLaserData, robotX*100, robotY*100, robotFi);
                 return 0;   
             }
 

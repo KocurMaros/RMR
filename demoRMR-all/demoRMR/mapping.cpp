@@ -26,11 +26,14 @@ double shift_theta(double theta)
         return 360.0 - theta;
     }
 }
-Hash_map create_map(LaserMeasurement laser_data, double robotX, double robotY, double robotTheta){
+// [0,0.1]
+Hash_map Mapping::create_map(LaserMeasurement laser_data, double robotX, double robotY, double robotTheta){
     Hash_map new_map = Hash_map(robotX, robotY, robotTheta);
     double angle, distance;
     double obstacle_x, obstacle_y;
     std::cout << shift_theta(robotTheta) << std::endl;
+    uint16_t dim = new_map.get_map_dimension();
+    dim = 300;
     for(size_t i = 0; i < laser_data.numberOfScans; i++)
     {
         if(laser_data.Data[i].scanDistance == 0){
@@ -42,27 +45,20 @@ Hash_map create_map(LaserMeasurement laser_data, double robotX, double robotY, d
         obstacle_x = robotX -  distance * cos(deg2rad(angle));
         obstacle_y = robotY -  distance * sin(deg2rad(angle));
         // std::cout << "obstacle_x: " << obstacle_x << " obstacle_y: " << obstacle_y << std::endl;
-        if(obstacle_x <= (robotX+150) && obstacle_x >= (robotX-150) && obstacle_y <= (robotY+150) && obstacle_y >= (robotY-150)){
+        if(obstacle_x <= (robotX+dim) && obstacle_x >= (robotX-dim) && obstacle_y <= (robotY+dim) && obstacle_y >= (robotY-dim)){
             // std::cout << std::endl << std::endl;
             // std::cout << "obstacle_x: " << obstacle_x << " obstacle_y: " << obstacle_y << "blyyaat " << laser_data.Data[i].scanAngle <<  std::endl;
+            if(obstacle_x < minX)
+                minX = obstacle_x;
+            if(obstacle_x > maxX)
+                maxX = obstacle_x;
+            if(obstacle_y < minY)
+                minY = obstacle_y;
+            if(obstacle_y > maxY)
+                maxY = obstacle_y;
             Point point = Point(obstacle_x, obstacle_y, 0);
             new_map.update_map(point, true);
-        }else{
-            // if data are outside first hash map we need to create new one
-            // Calculate the new map's center position
-            double newCenterX = robotX + distance * cos(deg2rad(angle));
-            double newCenterY = robotY + distance * sin(deg2rad(angle));
-
-            // Create a new map with the shifted center position
-            Hash_map new_map = Hash_map(newCenterX, newCenterY, robotTheta);
-
-            // Update the map with the obstacle point
-            Point point = Point(obstacle_x, obstacle_y, 0);
-            new_map.update_map(point, true);
-
-            // Push the new map to the map vector
-            map_vector.push_back(new_map);
-            }
+        }
     }
     return new_map;
 }
@@ -99,7 +95,10 @@ void Mapping::Gmapping(LaserMeasurement laser_data, double robotX, double robotY
     for(size_t i = 0; i < map_vector.size(); i++){
         std::vector<std::vector<uint8_t>> map = map_vector[i].get_hash_map();
         std::vector<std::vector<Point>> coordinates = map_vector[i].get_coordinates();
+        std::cout << minX << " " << minY << " " << maxX << " " << maxY << std::endl;
+        std::cout << "________________________________________________________________________________________________________________________" << std::endl;
         for(size_t j = 0; j < map.size(); j++){
+            std::cout << "|" << std::endl;
             for(size_t k = 0; k < map[j].size(); k++){
                 if(map[j][k] == 1){
                     std::cout << "X ";
@@ -108,11 +107,21 @@ void Mapping::Gmapping(LaserMeasurement laser_data, double robotX, double robotY
                     std::cout << "  ";
                 }
             }
-            std::cout << "   ";
-            for(size_t k = 0; k < coordinates[j].size(); k++){
-                std::cout << "[" << coordinates[j][k].getX() << "," << coordinates[j][k].getY() << "]";
-            }
-            std::cout << std::endl;
+            // std::cout << "   ";
+            // for(size_t k = 0; k < coordinates[j].size(); k++){
+            //     std::cout << "[" << coordinates[j][k].getX() << "," << coordinates[j][k].getY() << "]";
+            // }
+            std::cout << "|" << std::endl;
         }
     }
+}
+
+void Mapping::merge_maps()
+{
+    //TODO
+}
+
+void Mapping::save_map()
+{
+    //TODO
 }
