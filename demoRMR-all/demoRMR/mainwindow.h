@@ -104,6 +104,9 @@ private:
     std::shared_ptr<Point> actual_point;
     std::shared_ptr<Point> set_point;
     std::shared_ptr<Point> desired_point;
+    double prev_x_map;
+    double prev_y_map;
+ 
     std::vector<Point> points_vector;
 
     std::shared_ptr<Mapping> maps;
@@ -121,7 +124,6 @@ private:
 
     double forwardspeed;//mm/s
     double rotationspeed;//omega/s
-
     int prev_x;
     int prev_y;
     int prev_gyro;
@@ -144,6 +146,8 @@ private:
     double prev_fi;
     
     bool rot_only;
+    uint8_t mapping;
+    bool read_map = false;
 
 public slots:
      void setUiValues(double robotX,double robotY,double robotFi);

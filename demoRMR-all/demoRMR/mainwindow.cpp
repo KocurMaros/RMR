@@ -41,6 +41,8 @@ MainWindow::MainWindow(QWidget *parent) :
     first_run = true;
     controller = make_shared<PIController>(3,0.1,2);
     actual_point = make_shared<Point>(0,0,0);
+    prev_x_map = -1000;
+    prev_y_map = -1000;
     set_point = make_shared<Point>(0,0,0);
     desired_point = make_shared<Point>(0,0,0);
     maps = make_shared<Mapping>();
@@ -56,7 +58,7 @@ MainWindow::MainWindow(QWidget *parent) :
     datacounter=0;
     rot_only = false;
     controller->clearIntegral();
-    
+    mapping = 0;
 }
 
 MainWindow::~MainWindow()
@@ -222,8 +224,18 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 return 0; //break maybe?
             }
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
+    
 
+            double error_distance = sqrt(pow(actual_point->getX() - prev_x_map, 2) + pow(actual_point->getY() - prev_y_map, 2));
+
+            if(rot_speed < 0.01 && error_distance > 500 ){
+                // cout << "CAll "<< rot_speed << " " << trans_speed << endl;
+                maps->Gmapping(copyOfLaserData, robotX, robotY, robotFi);
+                prev_x_map = actual_point->getX();
+                prev_y_map = actual_point->getY();
+            }
             if(abs(controller->error_distance) < WITHIN_TOLERANCE){
+                mapping++;
                 controller->clearIntegral();
                 robot.setTranslationSpeed(0);
                 controller->ramp.clear_time_hard();
@@ -232,7 +244,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     points_vector.erase(points_vector.begin());
                 }
                 // std::cout << "clear integral" << std::endl;
-                maps->Gmapping(copyOfLaserData, robotX*100, robotY*100, robotFi);
                 return 0;   
             }
 
@@ -276,6 +287,16 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         /// prazdny signal a slot bude vykreslovat strukturu (vtedy ju musite mat samozrejme ako member premmennu v mainwindow.ak u niekoho najdem globalnu premennu,tak bude cistit bludisko zubnou kefkou.. kefku dodam)
         /// vtedy ale odporucam pouzit mutex, aby sa vam nestalo ze budete pocas vypisovania prepisovat niekde inde
 
+    }
+    if(mapping == 6){
+        mapping++;
+        maps->save_map();
+    }
+    if(read_map){
+        read_map = false;
+        maps->load_map();
+        maps->print_map();
+        
     }
     datacounter++;
 
@@ -375,6 +396,7 @@ void MainWindow::on_pushButton_4_clicked() //stop
 {
     robot.setTranslationSpeed(0);
     bruh = false;
+    read_map = true;
 
 }
 void MainWindow::on_pushButton_7_clicked() //arc left
@@ -427,6 +449,10 @@ void MainWindow::on_pushButton_10_clicked()
     else {
         std::cout << "incorrect input!" << std::endl;
     }
-
+    points_vector.push_back(Point(0*1000,3.5*1000,0));
+    points_vector.push_back(Point(4*1000,4*1000,0));
+    points_vector.push_back(Point(3*1000,4*1000,0));
+    points_vector.push_back(Point(3*1000,0.5*1000,0));
+    points_vector.push_back(Point(5*1000,0.5*1000,0));
 }
 

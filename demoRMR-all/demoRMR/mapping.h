@@ -3,6 +3,8 @@
 
 // #include "mainwindow.h"
 #include <iomanip>
+#include <fstream>
+
 #include <rplidar.h>
 #include <math.h>
 #include "hash_map.h"
@@ -11,16 +13,17 @@
 class Mapping
 {
 private:
+    bool geno = true;
     std::vector<Hash_map> map_vector;
-    double minX = 100000, minY = 100000, maxX = -1000000, maxY = -1000000;
+    Hash_map map;
 public:
     Mapping(/* args */);
     ~Mapping();
-    void go_to_point(Point point);
     void Gmapping(LaserMeasurement laser_data, double robotX, double robotY, double robotTheta);
-    Hash_map create_map(LaserMeasurement laser_data, double robotX, double robotY, double robotTheta);
-    void merge_maps();
+    void create_map(LaserMeasurement laser_data, double robotX, double robotY, double robotTheta);
+    void load_map();
     void save_map();
+    void print_map();
 };
 
 #endif
