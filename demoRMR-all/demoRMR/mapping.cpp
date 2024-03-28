@@ -106,7 +106,7 @@ void Mapping::load_map()
             int arg1, arg2;
             char comma;
             if (iss >> arg1 >> comma >> arg2) {
-                std::cout << arg1 << " " << arg2 << std::endl;
+                // std::cout << arg1 << " " << arg2 << std::endl;
                 Point point(arg1, arg2, 0);
                 map.update_map(point, 1);
             }
