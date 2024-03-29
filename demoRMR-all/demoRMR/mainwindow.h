@@ -70,7 +70,9 @@ int processThisCamera(cv::Mat cameraData);
 
 private slots:
     void on_pushButton_9_clicked();
-
+    void on_pushButton_mapping_clicked();
+    void on_pushButton_loadMap_clicked();
+    
     void on_pushButton_2_clicked();
 
     void on_pushButton_3_clicked();

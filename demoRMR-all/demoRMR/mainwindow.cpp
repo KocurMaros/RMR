@@ -288,15 +288,9 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         /// vtedy ale odporucam pouzit mutex, aby sa vam nestalo ze budete pocas vypisovania prepisovat niekde inde
 
     }
-    if(mapping == 6){
+    if(mapping == 10){
         mapping++;
         maps->save_map();
-    }
-    if(read_map){
-        read_map = false;
-        maps->load_map();
-        maps->print_map();
-        
     }
     datacounter++;
 
@@ -366,7 +360,23 @@ void MainWindow::on_pushButton_9_clicked() //start button
             if(/*js==0 &&*/ axis==0){rotationspeed=-value*(3.14159/2.0);}}
     );
 }
-
+void MainWindow::on_pushButton_mapping_clicked(){
+    points_vector.push_back(Point(0*1000,0*1000,0));
+    points_vector.push_back(Point(0*1000,3.5*1000,0));
+    points_vector.push_back(Point(4*1000,4*1000,0));
+    points_vector.push_back(Point(3*1000,4*1000,0));
+    points_vector.push_back(Point(3*1000,0.5*1000,0));
+    points_vector.push_back(Point(5*1000,0.5*1000,0));
+    points_vector.push_back(Point(3.9*1000,0.3*1000,0));
+    points_vector.push_back(Point(2.9*1000,-0.2*1000,0));
+    points_vector.push_back(Point(2.9*1000,-0.7*1000,0));
+    points_vector.push_back(Point(1.6*1000,-1.35*1000,0));
+     bruh = true;
+}
+void MainWindow::on_pushButton_loadMap_clicked(){
+    maps->load_map();
+    maps->print_map();
+}
 void MainWindow::on_pushButton_2_clicked() //forward
 {
     //pohyb dopredu
@@ -396,7 +406,6 @@ void MainWindow::on_pushButton_4_clicked() //stop
 {
     robot.setTranslationSpeed(0);
     bruh = false;
-    read_map = true;
 
 }
 void MainWindow::on_pushButton_7_clicked() //arc left
@@ -449,10 +458,6 @@ void MainWindow::on_pushButton_10_clicked()
     else {
         std::cout << "incorrect input!" << std::endl;
     }
-    points_vector.push_back(Point(0*1000,3.5*1000,0));
-    points_vector.push_back(Point(4*1000,4*1000,0));
-    points_vector.push_back(Point(3*1000,4*1000,0));
-    points_vector.push_back(Point(3*1000,0.5*1000,0));
-    points_vector.push_back(Point(5*1000,0.5*1000,0));
+    
 }
 

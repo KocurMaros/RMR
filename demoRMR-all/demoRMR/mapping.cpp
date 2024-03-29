@@ -86,7 +86,7 @@ void Mapping::Gmapping(LaserMeasurement laser_data, double robotX, double robotY
 void Mapping::load_map()
 {
     std::string line;
-    std::ifstream MyFile("map_file3.txt");
+    std::ifstream MyFile(map_file);
     double centerX, centerY, width;
     if (getline(MyFile, line)) {
         std::istringstream iss(line);
@@ -170,7 +170,7 @@ void Mapping::save_map()
             }
         }
     }
-    std::ofstream MyFile("map_file3.txt");
+    std::ofstream MyFile(map_file);
 
     MyFile << centerX << " " << centerY << " " << width << std::endl;
     std::vector<std::vector<uint8_t>> map1 = whole_map.get_hash_map();
@@ -207,10 +207,10 @@ void Mapping::print_map(){
                 std::cout << "  ";
             }
         }
-        std::cout << "|  ";
-        for(size_t k = 0; k < coordinates[j].size(); k++){
-            std::cout << "[" << coordinates[j][k].getX() << "," << coordinates[j][k].getY() << "]";
-        }
+        // std::cout << "|  ";
+        // for(size_t k = 0; k < coordinates[j].size(); k++){
+        //     std::cout << "[" << coordinates[j][k].getX() << "," << coordinates[j][k].getY() << "]";
+        // }
         std::cout << "|" << std::endl;
     }
 }

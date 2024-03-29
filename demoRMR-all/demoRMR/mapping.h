@@ -16,6 +16,7 @@ private:
     bool geno = true;
     std::vector<Hash_map> map_vector;
     Hash_map map;
+    std::string  map_file = "map1.txt";
 public:
     Mapping(/* args */);
     ~Mapping();
