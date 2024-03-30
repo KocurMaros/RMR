@@ -33,6 +33,7 @@
 
 #include "mapping.h"
 #include "hash_map.h"
+#include "pathfinding.h"
 typedef struct
 {
     int speed;
@@ -112,6 +113,7 @@ private:
     std::vector<Point> points_vector;
 
     std::shared_ptr<Mapping> maps;
+    std::shared_ptr<Pathfinding> path;
     //vektor bude mat v sebe body, ktore, ked ich budes pridavat manualne tak sa pridaju appendom nakoniec
     //robot bude prechadzat bodmi tak, ze vzdy pojde na nulty bod vo vektore, akonahle sa tam dostane sa tento bod odstrani z vektora
     //robot bude chodit na body, len v pripade, ze vektor nie je prazdny

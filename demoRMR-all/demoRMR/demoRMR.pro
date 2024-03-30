@@ -85,13 +85,15 @@ SOURCES += main.cpp\
         controller.cpp\
         ramp.cpp\
         mapping.cpp\
-        hash_map.cpp
+        hash_map.cpp\
+        pathfinding.cpp
 
 HEADERS  += mainwindow.h\
         point.h\
         controller.h\
         ramp.h\
         mapping.h\
-        hash_map.h
+        hash_map.h\
+        pathfinding.h
 
 FORMS    += mainwindow.ui

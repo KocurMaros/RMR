@@ -9,6 +9,7 @@ Mapping::~Mapping()
 {
 }
 
+
 double deg2rad(double deg)
 {
     return deg * M_PI / 180.0;
@@ -29,13 +30,10 @@ double shift_theta_robot(double theta)
         return 360.0 - theta;
     }
 }
-// [0,0.1]
 void Mapping::create_map(LaserMeasurement laser_data, double robotX, double robotY, double robotTheta){
-    int bad = 0;
     for(size_t u = 0; u < map_vector.size(); u++){
         double angle, distance;
         double obstacle_x, obstacle_y;
-        // std::cout << shift_theta(robotTheta) << std::endl;
         uint16_t dim = map_vector[u].get_map_dimension();
         dim = 300;
         for(size_t i = 0; i < laser_data.numberOfScans; i++)
@@ -43,35 +41,21 @@ void Mapping::create_map(LaserMeasurement laser_data, double robotX, double robo
             if(laser_data.Data[i].scanDistance == 0 || laser_data.Data[i].scanDistance > 3200){
                 continue;
             }
-            // angle = shift_theta(robotTheta) + laser_data.Data[i].scanAngle ;
-
+       
             angle = shift_theta(shift_theta_robot(robotTheta) + laser_data.Data[i].scanAngle);
             distance = laser_data.Data[i].scanDistance/10.0;
             obstacle_x = robotX +  distance * cos(deg2rad(angle));
             obstacle_y = robotY +  distance * sin(deg2rad(angle));
-            if(obstacle_x < map_vector[u].get_minX() || obstacle_x > map_vector[u].get_maxX() || obstacle_y < map_vector[u].get_minY() || obstacle_y > map_vector[u].get_maxY()){
-                // std::cout << map_vector[u].get_minX() << " " << map_vector[u].get_minY() << " " << map_vector[u].get_maxX() << " " << map_vector[u].get_maxY() << std::endl;
-                // std::cout << obstacle_x << " " << obstacle_y << std::endl;
-                // std::cout << laser_data.Data[i].scanDistance << " " << laser_data.Data[i].scanAngle << " " << shift_theta_robot(robotTheta) << " " << angle << std::endl; 
-                // std::cout << map_vector[u].get_minX() << " " << map_vector[u].get_minY() << " " << map_vector[u].get_maxX() << " " << map_vector[u].get_maxY() << std::endl;
-                bad ++;
+            if(obstacle_x < map_vector[u].get_minX() || obstacle_x > map_vector[u].get_maxX() || obstacle_y < map_vector[u].get_minY() || obstacle_y > map_vector[u].get_maxY())
                 continue;
-            }
-            // if(obstacle_x <= (robotX+dim) && obstacle_x >= (robotX-dim) && obstacle_y <= (robotY+dim) && obstacle_y >= (robotY-dim)){
             Point point = Point(obstacle_x, obstacle_y, 0);
-            // std::cout << obstacle_x << " " << obstacle_y << " " << u << std::endl;
-            map_vector[u].update_map(point, true);
-            // }
+            map_vector[u].update_map(point, true);         
         }
-        // std::cout << "bad " << bad << std::endl; 
-        bad = 0;
     }
 }
 
 void Mapping::Gmapping(LaserMeasurement laser_data, double robotX, double robotY, double robotTheta)
 {
-    // std::cout << "robotX "   << robotX << " robotY " << robotY << " robotTheta " << robotTheta << std::endl;  
-    // Point next_position = Point(0, 0, 0);
     if(geno){
         geno = false;
         map_vector.push_back(Hash_map(0, 0, robotTheta, 10, 63));
@@ -87,7 +71,7 @@ void Mapping::load_map()
 {
     std::string line;
     std::ifstream MyFile(map_file);
-    double centerX, centerY, width;
+    int centerX, centerY, width;
     if (getline(MyFile, line)) {
         std::istringstream iss(line);
         if (!(iss >> centerX >> centerY >> width)) {
@@ -95,8 +79,13 @@ void Mapping::load_map()
         }
         std::cout << "num1: " << centerX << ", num2: " << centerY << ", num3: " << width << std::endl;
     }
+    if(centerX%2 != 0)
+        centerX = centerX + 5;
+    
+    if(centerY%2 != 0)
+        centerY = centerY +5;
     map = Hash_map(centerX, centerY, 0, 10, width);
-
+    int line_ind=0 , col_ind = 0;
     while (getline(MyFile, line)) {
         size_t start = line.find('[');
         size_t end = line.find(']');
@@ -112,9 +101,12 @@ void Mapping::load_map()
             }
             start = line.find('[', end);
             end = line.find(']', start);
+            col_ind++;
         }
+        line_ind++;
     }
     MyFile.close();
+    std::cout << "load " << map.get_boarder_maxY() << " " << map.get_boarder_minY() << " " << map.get_boarder_maxX() << " " << map.get_boarder_minX() << std::endl;
     // std::vector<std::vector<uint8_t>> map1 = map.get_hash_map();
     // std::vector<std::vector<Point>> coordinates = map.get_coordinates();
     // std::cout << "________________________________________________________________________________________________________________________" << std::endl;
@@ -159,7 +151,7 @@ void Mapping::save_map()
     std::cout << centerX << " " << centerY << " " << width << std::endl;
     Hash_map whole_map = Hash_map(centerX, centerY, 0, 10, width);
     for(size_t i = 0; i < map_vector.size(); i++){
-        std::vector<std::vector<uint8_t>> map = map_vector[i].get_hash_map();
+        std::vector<std::vector<uint16_t>> map = map_vector[i].get_hash_map();
         std::vector<std::vector<Point>> coordinates = map_vector[i].get_coordinates();
         for(size_t j = 0; j < map.size(); j++){
             for(size_t k = 0; k < map[j].size(); k++){
@@ -173,7 +165,7 @@ void Mapping::save_map()
     std::ofstream MyFile(map_file);
 
     MyFile << centerX << " " << centerY << " " << width << std::endl;
-    std::vector<std::vector<uint8_t>> map1 = whole_map.get_hash_map();
+    std::vector<std::vector<uint16_t>> map1 = whole_map.get_hash_map();
     std::vector<std::vector<Point>> coordinates = whole_map.get_coordinates();
     bool was_one = false;
     for(size_t i = 0; i < map1.size(); i++){
@@ -195,22 +187,173 @@ void Mapping::save_map()
     MyFile.close();
 }
 void Mapping::print_map(){
-    std::vector<std::vector<uint8_t>> map1 = map.get_hash_map();
+    std::vector<std::vector<uint16_t>> map1 = map.get_hash_map();
     std::vector<std::vector<Point>> coordinates = map.get_coordinates();
     for(size_t j = 0; j < map1.size(); j++){
-        std::cout << "|";
+        // std::cout << "|";
         for(size_t k = 0; k < map1[j].size(); k++){
-            if(map1[j][k] == 1){
-                std::cout << "X ";
+            if(coordinates[j][k].getX() == 0 && coordinates[j][k].getY() == 0){
+                std::cout << "X" << " ";
+            }else{
+                std::cout << map1[j][k] << " ";
             }
-            else{
-                std::cout << "  ";
-            }
+            // if(map1[j][k] == 1){
+            //     std::cout << "X ";
+            // }
+            // else{
+            //     std::cout << "";
+            // }
         }
-        // std::cout << "|  ";
+        std::cout << "|  ";
         // for(size_t k = 0; k < coordinates[j].size(); k++){
         //     std::cout << "[" << coordinates[j][k].getX() << "," << coordinates[j][k].getY() << "]";
         // }
         std::cout << "|" << std::endl;
     }
+}
+
+void Mapping::flood_fill(Point start, Point goal) {
+
+    int ind_start_x, ind_start_y;
+    int ind_goal_x, ind_goal_y;   
+    
+    map.update_map(Point(goal.getX(),goal.getY(),goal.getTheta()), 2);
+    
+    int x = goal.getX();
+    int y = goal.getY();
+    for (size_t i = 0; i < map.get_map_dimension(); i++)
+    {
+        if (map.get_coordinates()[i][0].getX() <= x && map.get_coordinates()[i + 1][0].getX() > x)
+        {
+            std::cout << map.get_coordinates()[i][0].getX() << " " << map.get_coordinates()[i + 1][0].getX() << std::endl;
+            ind_goal_x = i;
+            break;
+        }
+    }
+    for(size_t j = 0; j < map.get_map_dimension(); j++)
+    {
+        if (map.get_coordinates()[0][j].getY() <= y && map.get_coordinates()[0][j + 1].getY() > y)
+        {
+            std::cout << map.get_coordinates()[0][j].getY() << " " << map.get_coordinates()[0][j + 1].getY() << std::endl;
+            ind_goal_y = j;
+            break;
+        }
+    }
+    x = start.getX();
+    y = start.getY();
+    for (size_t i = 0; i < map.get_map_dimension(); i++)
+    {
+        if (map.get_coordinates()[i][0].getX() <= x && map.get_coordinates()[i + 1][0].getX() > x)
+        {
+            ind_start_x = i;
+            break;
+        }
+    }
+    for(size_t j = 0; j < map.get_map_dimension(); j++)
+    {
+        if (map.get_coordinates()[0][j].getY() <= y && map.get_coordinates()[0][j + 1].getY() > y)
+        {
+            ind_start_y = j;
+            break;
+        }
+    }
+    // std::cout << "Point coord" << start.getX() << " " << start.getY() << " " << goal.getX() << " " << goal.getY() << std::endl;
+    // std::cout << "ind_start_x " << ind_start_x << " ind_start_y " << ind_start_y << " ind_goal_x " << ind_goal_x << " ind_goal_y " << ind_goal_y << std::endl;
+    // std::cout << "Map ind " << map.get_coordinates()[ind_start_x][ind_start_y].getX() << " " << map.get_coordinates()[ind_start_x][ind_start_y].getY() << " " << map.get_coordinates()[ind_goal_x][ind_goal_y].getX() << " " << map.get_coordinates()[ind_goal_x][ind_goal_y].getY() << std::endl; 
+    
+    std::vector<PointQueue> path = floodFillPathfind(ind_goal_x, ind_goal_y, ind_start_x, ind_start_y);
+    std::cout << "path size " << path.size() << std::endl;
+}
+
+std::vector<PointQueue> Mapping::floodFillPathfind(int startX, int startY, int goalX, int goalY) {
+    std::vector<std::vector<uint16_t>> grid = map.get_hash_map();
+    int start_num = 3;
+    int lowest_index = 3;
+    int rows = map.get_map_dimension();
+    int cols = map.get_map_dimension();
+
+    std::vector<std::vector<bool>> visited(rows, std::vector<bool>(cols, false));
+    std::priority_queue<PointQueue> frontier;
+
+    PointQueue start = {startX, startY, 0};
+    frontier.push(start);
+    visited[startY][startX] = true;
+
+    while (!frontier.empty()) {
+        PointQueue current = frontier.top();
+        frontier.pop();
+
+        if (current.x == goalX && current.y == goalY) {
+            std::cout << "found goal" << std::endl;
+            // std::cout << current.x << " " << current.y << std::endl;
+            // std::vector<PointQueue> path;
+            // path.push_back(current);
+   
+            // // Backtrack to reconstruct path
+            // PointQueue currentForPath = current;
+            // while (visited[currentForPath.y][currentForPath.x]) { // Loop until we reach the starting point
+            //     // Optional: If using parent field in PointQueue
+            //     // currentForPath = currentForPath.parent;
+            //     // Search visited grid for predecessor (point with distance-1)
+            //     for (int dx = -1; dx <= 1; dx++) {
+            //         for (int dy = -1; dy <= 1; dy++) {
+            //             int prevX = currentForPath.x + dx;
+            //             int prevY = currentForPath.y + dy;
+            //             std::cout << "prevX " << prevX << " prevY " << prevY << std::endl;
+            //             if (prevX >= 0 && prevX < cols && prevY >= 0 && prevY < rows && 
+            //                 visited[prevY][prevX] && grid[prevY][prevX] != 1 && 
+            //                 visited[prevY][prevX] == currentForPath.distance - 1) {
+            //                 path.push_back({prevX, prevY, currentForPath.distance - 1});
+            //                 currentForPath = {prevX, prevY, currentForPath.distance - 1};
+            //                 break; // Exit inner loop after finding predecessor
+            //             }
+            //         }
+            //     }
+            // }
+            // std::cout << "path size " << path.size() << std::endl;
+            // // Reverse the path for correct order (goal to start)
+            // std::reverse(path.begin(), path.end());
+            // return path;
+        }
+
+        // Explore neighbors (up, down, left, right)
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+                if(abs(dy) == abs(dx)){
+                    continue;
+                }
+                int newX = current.x + dx;
+                int newY = current.y + dy;
+
+                // Check for valid neighbors within grid bounds and not walls
+                if (newX >= 0 && newX < cols && newY >= 0 && newY < rows && grid[newX][newY] != 1 && !visited[newX][newY]) {
+                    visited[newX][newY] = true;
+                    PointQueue neighbor = {newX, newY, current.distance + 1}; // Increment distance
+                    frontier.push(neighbor);
+                    
+                    grid = map.get_hash_map();
+                    
+                    lowest_index = 3;
+                    for (int dxx = -1; dxx <= 1; dxx++) {
+                        for (int dyy = -1; dyy <= 1; dyy++) {
+                            if(abs(dyy) == abs(dxx)){
+                                continue;
+                            }
+                            int prevX = newX + dxx;
+                            int prevY = newY + dyy;
+                            if (prevX >= 0 && prevX < cols && prevY >= 0 && prevY < rows && grid[prevX][prevY] != 1 && 
+                                grid[prevX][prevY] >= lowest_index) {
+                                std::cout << lowest_index << " " << grid[prevX][prevY] << std::endl;
+                                lowest_index = grid[prevX][prevY]+1;
+                            }
+                        }
+                    }
+                    map.update_map(Point(map.get_coordinates()[newX][newY].getX(), map.get_coordinates()[newX][newY].getY(), 0), lowest_index);
+                }
+            }
+        }
+    }
+
+    // No path found
+    return {};
 }

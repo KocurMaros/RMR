@@ -30,6 +30,7 @@ set(SOURCES
     demoRMR/controller.cpp
     demoRMR/hash_map.cpp
     demoRMR/mapping.cpp
+    demoRMR/pathfinding.cpp
 )
 
 set(HEADER
@@ -39,6 +40,7 @@ set(HEADER
     demoRMR/controller.h
     demoRMR/hash_map.h
     demoRMR/mapping.h
+    demoRMR/pathfinding.h
 )
 set(UI
 	demoRMR/mainwindow.ui
