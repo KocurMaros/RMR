@@ -38,7 +38,7 @@ public:
     void load_map();
     void save_map();
     void print_map();
-    void flood_fill(Point start, Point goal);
-    std::vector<PointQueue> floodFillPathfind(int startX, int startY, int goalX, int goalY);
+    std::vector<Point> flood_fill(Point start, Point goal);
+    std::vector<Point> floodFillPathfind(int startX, int startY, int goalX, int goalY);
 };
 #endif

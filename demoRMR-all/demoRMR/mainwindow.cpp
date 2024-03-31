@@ -302,7 +302,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
 ///toto je calback na data z lidaru, ktory ste podhodili robotu vo funkcii on_pushButton_9_clicked
 /// vola sa ked dojdu nove data z lidaru
-int MainWindow::processThisLidar(LaserMeasurement laserData)
+ int MainWindow::processThisLidar(LaserMeasurement laserData)
 {
 
 
@@ -371,7 +371,7 @@ void MainWindow::on_pushButton_mapping_clicked(){
     points_vector.push_back(Point(3.9*1000,0.3*1000,0));
     points_vector.push_back(Point(2.9*1000,-0.2*1000,0));
     points_vector.push_back(Point(2.9*1000,-0.7*1000,0));
-    points_vector.push_back(Point(1.6*1000,-1.35*1000,0));
+    points_vector.push_back(Point(1*1000,-1.35*1000,0));
     bruh = true;
 }
 void MainWindow::on_pushButton_loadMap_clicked(){
@@ -380,7 +380,13 @@ void MainWindow::on_pushButton_loadMap_clicked(){
     cout << "Map loaded" << endl;
     maps->print_map();
     cout << "Map printed" << endl;
-    maps->flood_fill(Point(0,0,0),Point(100,-130,0));
+    std::vector<Point> trajectory = maps->flood_fill(Point(0,0,0),Point(100,-130,0));
+    // maps->flood_fill(Point(0,0,0),Point(100,-130,0));
+    for(auto &p : trajectory){
+        points_vector.push_back(p);
+        cout << "X: " << p.getX() << " Y: " << p.getY() << endl;
+    }
+    bruh = true;
     maps->print_map();
 
 }
