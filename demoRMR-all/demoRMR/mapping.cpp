@@ -34,47 +34,16 @@ void Mapping::create_new_map(double obstacleX, double obstacleY, double robotThe
     bool x_was = false, y_was = false; 
     int k = -10, l = -10;
     while(1){
-        if(k < 0){
-            std::cout << obstacleX << " " << (k+1)*310.0 << " " << k*310.0 << std::endl;
-            if(obstacleX < (k+1)*310.0 && obstacleX > (k)*310.0){
-                break;
-            }
-        }else{
-            if(obstacleX > k*310.0 && obstacleX < (k+1)*310.0){
-                break;
-            }
-        }
+        if(obstacleX < (k*620.0)+310.0 && obstacleX > (k*310.0)-310.0)
+            break;
         k++;
     }
     while(1){
-        std::cout << obstacleY << " " << (l+1)*310.0 << " " << l*310.0 << std::endl;
-        // -3   -1 
-        if(l < 0){
-            if(obstacleY < (l+1)*310.0 && obstacleY > (l)*310.0){
-                break;
-            }
-        }else{
-            if(obstacleY > l*310.0 && obstacleY < (l+1)*310.0){
-                break;
-            }
-        }
+        if(obstacleY > (l*620.0)-310.0 && obstacleY < (l*620.0)+310.0)
+            break;
         l++;
     }
-    map_vector.push_back(Hash_map(620.0*k, 620.0*l, robotTheta, 10, 63));
-
-    std::cout << "New map center" << 620.0*k << " " << 620.0*l << std::endl; 
-    // for(size_t i=0; map_vector.size(); i++){
-    //     if(obstacleX >= map_vector[i].get_minX() && obstacleX <= map_vector[i].get_maxX())
-    //         x_was = true;
-    //     if(obstacleY >= map_vector[i].get_minY() && obstacleY <= map_vector[i].get_maxY())
-    //         y_was = true;
-    // }
-    // if(!x_was){
-
-    // }
-    // if(!y_was){
-
-    // }
+    map_vector.push_back(Hash_map(620.0*(k), 620.0*l, robotTheta, 10, 63)); 
 }
 void Mapping::create_map(LaserMeasurement laser_data, double robotX, double robotY, double robotTheta){
     for(size_t u = 0; u < map_vector.size(); u++){
@@ -93,8 +62,8 @@ void Mapping::create_map(LaserMeasurement laser_data, double robotX, double robo
             obstacle_x = robotX +  distance * cos(deg2rad(angle));
             obstacle_y = robotY +  distance * sin(deg2rad(angle));
             if(obstacle_x < map_vector[u].get_minX() || obstacle_x > map_vector[u].get_maxX() || obstacle_y < map_vector[u].get_minY() || obstacle_y > map_vector[u].get_maxY()){
-                // if(u == map_vector.size()-1)
-                //     create_new_map(obstacle_x, obstacle_y,robotTheta);
+                if(u == map_vector.size()-1)
+                    create_new_map(obstacle_x, obstacle_y,robotTheta);
                 continue;
             }
             laser_data.Data[i].scanDistance = 0;
@@ -106,14 +75,8 @@ void Mapping::create_map(LaserMeasurement laser_data, double robotX, double robo
 
 void Mapping::Gmapping(LaserMeasurement laser_data, double robotX, double robotY, double robotTheta)
 {
-    if(geno){
-        geno = false;
+    if(map_vector.empty())
         map_vector.push_back(Hash_map(0, 0, robotTheta, 10, 63));
-        map_vector.push_back(Hash_map(620.0, 0, robotTheta, 10, 63)); 
-        map_vector.push_back(Hash_map(0, 620.0, robotTheta, 10, 63));    //scan for obstacles and update map
-        map_vector.push_back(Hash_map(620.0, 620.0, robotTheta, 10, 63));    //scan for obstacles and update map
-    }
-    
     create_map(laser_data, robotX*100., robotY*100., robotTheta);
 }
 

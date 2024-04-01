@@ -24,7 +24,6 @@ struct PointQueue {
 class Mapping
 {
 private:
-    bool geno = true;
     std::vector<Hash_map> map_vector;
     Hash_map map;
     std::string  map_file = "map5.txt";
