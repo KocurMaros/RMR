@@ -211,10 +211,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         // actual.x = 1000*robotX;
         // actual.y = 1000*robotY;
         // actual.theta = robotFi*PI/180.0;
-        
         actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
-            
             double rot_speed;
             int trans_speed, radius;
             if (!points_vector.empty()){
@@ -289,9 +287,13 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         /// vtedy ale odporucam pouzit mutex, aby sa vam nestalo ze budete pocas vypisovania prepisovat niekde inde
 
     }
+    // if(mapping == 10 && mapping_start){
+
     if(mapping == 10){
         mapping++;
         maps->save_map();
+        mapping_start = false;
+        maps->print_map();
     }
     datacounter++;
 
@@ -362,6 +364,7 @@ void MainWindow::on_pushButton_9_clicked() //start button
     );
 }
 void MainWindow::on_pushButton_mapping_clicked(){
+    std::cout << "Mapping started" << std::endl;
     points_vector.push_back(Point(0*1000,0*1000,0));
     points_vector.push_back(Point(0*1000,3.5*1000,0));
     points_vector.push_back(Point(4*1000,4*1000,0));
@@ -373,22 +376,28 @@ void MainWindow::on_pushButton_mapping_clicked(){
     points_vector.push_back(Point(2.9*1000,-0.7*1000,0));
     points_vector.push_back(Point(1*1000,-1.35*1000,0));
     bruh = true;
+    // mapping_start = true;
 }
 void MainWindow::on_pushButton_loadMap_clicked(){
-    cout << "Loading map" << endl;
-    maps->load_map();
-    cout << "Map loaded" << endl;
-    maps->print_map();
-    cout << "Map printed" << endl;
-    std::vector<Point> trajectory = maps->flood_fill(Point(0,0,0),Point(100,-130,0));
-    // maps->flood_fill(Point(0,0,0),Point(100,-130,0));
-    for(auto &p : trajectory){
-        points_vector.push_back(p);
-        cout << "X: " << p.getX() << " Y: " << p.getY() << endl;
-    }
-    bruh = true;
-    maps->print_map();
 
+    bool xOK = true,yOK = true;
+    double x = ui->lineEdit_5->text().toDouble(&xOK);
+    double y = ui->lineEdit_6->text().toDouble(&yOK);
+    if (xOK && yOK){
+        cout << "Loading map" << endl;
+        maps->load_map();
+        cout << "Map loaded" << endl;
+        Point point(x*100,y*100,0*PI/180);
+        std::vector<Point> trajectory = maps->flood_fill(Point(robotX*100,robotY*100,0),point);
+        for(auto &p : trajectory){
+            points_vector.push_back(p);
+            cout << "X: " << p.getX() << " Y: " << p.getY() << endl;
+        }
+        bruh = true;
+    }
+    else {
+        std::cout << "incorrect input!" << std::endl;
+    }
 }
 void MainWindow::on_pushButton_2_clicked() //forward
 {

@@ -30,6 +30,52 @@ double shift_theta_robot(double theta)
         return 360.0 - theta;
     }
 }
+void Mapping::create_new_map(double obstacleX, double obstacleY, double robotTheta){
+    bool x_was = false, y_was = false; 
+    int k = -10, l = -10;
+    while(1){
+        if(k < 0){
+            std::cout << obstacleX << " " << (k+1)*310.0 << " " << k*310.0 << std::endl;
+            if(obstacleX < (k+1)*310.0 && obstacleX > (k)*310.0){
+                break;
+            }
+        }else{
+            if(obstacleX > k*310.0 && obstacleX < (k+1)*310.0){
+                break;
+            }
+        }
+        k++;
+    }
+    while(1){
+        std::cout << obstacleY << " " << (l+1)*310.0 << " " << l*310.0 << std::endl;
+        // -3   -1 
+        if(l < 0){
+            if(obstacleY < (l+1)*310.0 && obstacleY > (l)*310.0){
+                break;
+            }
+        }else{
+            if(obstacleY > l*310.0 && obstacleY < (l+1)*310.0){
+                break;
+            }
+        }
+        l++;
+    }
+    map_vector.push_back(Hash_map(620.0*k, 620.0*l, robotTheta, 10, 63));
+
+    std::cout << "New map center" << 620.0*k << " " << 620.0*l << std::endl; 
+    // for(size_t i=0; map_vector.size(); i++){
+    //     if(obstacleX >= map_vector[i].get_minX() && obstacleX <= map_vector[i].get_maxX())
+    //         x_was = true;
+    //     if(obstacleY >= map_vector[i].get_minY() && obstacleY <= map_vector[i].get_maxY())
+    //         y_was = true;
+    // }
+    // if(!x_was){
+
+    // }
+    // if(!y_was){
+
+    // }
+}
 void Mapping::create_map(LaserMeasurement laser_data, double robotX, double robotY, double robotTheta){
     for(size_t u = 0; u < map_vector.size(); u++){
         double angle, distance;
@@ -46,8 +92,12 @@ void Mapping::create_map(LaserMeasurement laser_data, double robotX, double robo
             distance = laser_data.Data[i].scanDistance/10.0;
             obstacle_x = robotX +  distance * cos(deg2rad(angle));
             obstacle_y = robotY +  distance * sin(deg2rad(angle));
-            if(obstacle_x < map_vector[u].get_minX() || obstacle_x > map_vector[u].get_maxX() || obstacle_y < map_vector[u].get_minY() || obstacle_y > map_vector[u].get_maxY())
+            if(obstacle_x < map_vector[u].get_minX() || obstacle_x > map_vector[u].get_maxX() || obstacle_y < map_vector[u].get_minY() || obstacle_y > map_vector[u].get_maxY()){
+                // if(u == map_vector.size()-1)
+                //     create_new_map(obstacle_x, obstacle_y,robotTheta);
                 continue;
+            }
+            laser_data.Data[i].scanDistance = 0;
             Point point = Point(obstacle_x, obstacle_y, 0);
             map_vector[u].update_map(point, true);         
         }
@@ -197,6 +247,32 @@ void Mapping::save_map()
 void Mapping::print_map(){
     std::vector<std::vector<uint16_t>> map1 = map.get_hash_map();
     std::vector<std::vector<Point>> coordinates = map.get_coordinates();
+    // for(size_t j = 0; j < map1.size(); j++){
+    //     // std::cout << "|";
+    //     for(size_t k = 0; k < map1[j].size(); k++){
+    //         if(coordinates[j][k].getX() == 0 && coordinates[j][k].getY() == 0){
+    //             std::cout << "X" << "   ";
+    //         }else{
+    //             if(map1[j][k] >= 100)
+    //                 std::cout << map1[j][k] << " ";
+    //             else if(map1[j][k] >= 10)
+    //                 std::cout << map1[j][k] << "  ";
+    //             else
+    //                 std::cout << map1[j][k] << "   ";
+    //         }
+    //         // if(map1[j][k] == 1){
+    //         //     std::cout << "X ";
+    //         // }
+    //         // else{
+    //         //     std::cout << "";
+    //         // }
+    //     }
+    //     std::cout << "|  ";
+    //     // for(size_t k = 0; k < coordinates[j].size(); k++){
+    //     //     std::cout << "[" << coordinates[j][k].getX() << "," << coordinates[j][k].getY() << "]";
+    //     // }
+    //     std::cout << "|" << std::endl;
+    // }
     for(size_t j = 0; j < map1.size(); j++){
         // std::cout << "|";
         for(size_t k = 0; k < map1[j].size(); k++){
@@ -210,17 +286,12 @@ void Mapping::print_map(){
                 else
                     std::cout << map1[j][k] << "   ";
             }
-            // if(map1[j][k] == 1){
-            //     std::cout << "X ";
-            // }
-            // else{
-            //     std::cout << "";
-            // }
         }
         std::cout << "|  ";
-        // for(size_t k = 0; k < coordinates[j].size(); k++){
-        //     std::cout << "[" << coordinates[j][k].getX() << "," << coordinates[j][k].getY() << "]";
-        // }
+        for(size_t k = 0; k < coordinates[j].size(); k++){
+            std::cout << "[" << coordinates[j][k].getX() << "," << coordinates[j][k].getY() << "]";
+            std::cout << map.get_coordinates()[j][k].getX() << " " <<map.get_coordinates()[j][k].getY(); 
+        }
         std::cout << "|" << std::endl;
     }
 }
@@ -270,13 +341,15 @@ std::vector<Point> Mapping::flood_fill(Point start, Point goal) {
             break;
         }
     }
-    // std::cout << "Point coord" << start.getX() << " " << start.getY() << " " << goal.getX() << " " << goal.getY() << std::endl;
-    // std::cout << "ind_start_x " << ind_start_x << " ind_start_y " << ind_start_y << " ind_goal_x " << ind_goal_x << " ind_goal_y " << ind_goal_y << std::endl;
-    // std::cout << "Map ind " << map.get_coordinates()[ind_start_x][ind_start_y].getX() << " " << map.get_coordinates()[ind_start_x][ind_start_y].getY() << " " << map.get_coordinates()[ind_goal_x][ind_goal_y].getX() << " " << map.get_coordinates()[ind_goal_x][ind_goal_y].getY() << std::endl; 
+    std::cout << "Point coord" << start.getX() << " " << start.getY() << " " << goal.getX() << " " << goal.getY() << std::endl;
+    std::cout << "ind_start_x " << ind_start_x << " ind_start_y " << ind_start_y << " ind_goal_x " << ind_goal_x << " ind_goal_y " << ind_goal_y << std::endl;
+    std::cout << "Map ind " << map.get_coordinates()[ind_start_x][ind_start_y].getX() << " " << map.get_coordinates()[ind_start_x][ind_start_y].getY() << " " << map.get_coordinates()[ind_goal_x][ind_goal_y].getX() << " " << map.get_coordinates()[ind_goal_x][ind_goal_y].getY() << std::endl; 
     
     std::vector<Point> path = floodFillPathfind(ind_start_x, ind_start_y, ind_goal_x, ind_goal_y);
     // std::cout << "path size " << path.size() << std::endl;
     std::vector<Point> filteredPath;
+    int prev_shiftX = 0, prev_shiftY = 0;
+    int shift_bruh = 100;
     bool sameX = false, sameY = false;
     for(size_t i = 0; i < path.size(); i++){
         if(path[i].getX() == path[i+1].getX() && !sameY)
@@ -285,17 +358,40 @@ std::vector<Point> Mapping::flood_fill(Point start, Point goal) {
             sameY = true;
         
         if(path[i].getX() == path[i+1].getX() && path[i].getY() != path[i+1].getY() && sameY){
-            filteredPath.push_back(path[i]);
+            if((path[i].getY() - path[i-1].getY()) > 0){
+                filteredPath.push_back(Point(path[i].getX()-shift_bruh+prev_shiftX,path[i].getY()+prev_shiftY,0));
+                prev_shiftX = -shift_bruh;
+                prev_shiftY = 0;
+            }
+            else{
+                filteredPath.push_back(Point(path[i].getX()+shift_bruh+prev_shiftX,path[i].getY()+prev_shiftY,0));
+                prev_shiftX = shift_bruh;
+                prev_shiftY = 0;
+            }
+            // filteredPath.push_back(path[i]);
             sameY = false;
             continue;
         }
         if(path[i].getY() == path[i+1].getY() && path[i].getX() != path[i+1].getX() && sameX){
-            filteredPath.push_back(path[i]);
+            if((path[i].getX() - path[i-1].getX()) > 0){
+                filteredPath.push_back(Point(path[i].getX()+prev_shiftX,path[i].getY()-shift_bruh+prev_shiftY,0));
+                prev_shiftX = 0;
+                prev_shiftY = -shift_bruh;
+            } 
+            else{
+                filteredPath.push_back(Point(path[i].getX()+prev_shiftX,path[i].getY()+shift_bruh+prev_shiftY,0));
+                prev_shiftX = 0;
+                prev_shiftY = shift_bruh;
+            }
+            // filteredPath.push_back(path[i]);
             sameX = false;
+        
             continue;
         }
 
     }
+    filteredPath.push_back(Point(goal.getX()*10,goal.getY()*10,0));
+
     return filteredPath;
     // std::cout << "filteredPath size " << filteredPath.size() << std::endl;
 
@@ -325,6 +421,7 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
 
         if (current.x == startX && current.y == startY) {
             std::cout << "found goal" << std::endl;
+            // print_map();
             uint16_t act_index;
             int x_path = current.x;
             int y_path = current.y;
@@ -333,20 +430,26 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
             std::vector<Point> path;
             path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
             while(act_index != 3){
-                if(act_index > grid[x_path-1][y_path] && grid[x_path-1][y_path] >=2 && grid[x_path-2][y_path] >= 2){
-                    x_path = x_path - 1;
+                for (int dx = -3; dx <= 3; dx++)
+                    for (int dy = -3; dy <= 3; dy++)
+                        if(grid[x_path+dx][y_path+dy] <= 1){
+                            std::cout << "wall in path" << std::endl;
+                            continue;
+                        }
+                if(act_index > grid[x_path][y_path+1] && grid[x_path][y_path+1] >=2 && grid[x_path][y_path+2] >= 2){
+                    y_path = y_path + 1;
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
                 }
-                else if(act_index > grid[x_path+1][y_path] && grid[x_path+1][y_path] >=2&& grid[x_path+2][y_path] >= 2){
+                else if(act_index > grid[x_path+1][y_path] && grid[x_path+1][y_path] >=2 && grid[x_path+2][y_path] >= 2){
                     x_path = x_path + 1;
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
                 }
-                else if(act_index > grid[x_path][y_path-1] && grid[x_path][y_path-1] >=2&& grid[x_path][y_path-2] >= 2){  
+                else if(act_index > grid[x_path][y_path-1] && grid[x_path][y_path-1] >=2 && grid[x_path][y_path-2] >= 2){  
                     y_path = y_path - 1;
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
                 }
-                else if(act_index > grid[x_path][y_path+1] && grid[x_path][y_path+1] >=2&& grid[x_path][y_path+2] >= 2){
-                    y_path = y_path + 1;
+                else if(act_index > grid[x_path-1][y_path] && grid[x_path-1][y_path] >=2 && grid[x_path-2][y_path] >= 2){
+                    x_path = x_path - 1;
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
                 }
                 // std::cout << grid[x_path][y_path] << " " << grid[x_path-1][y_path] << " " << grid[x_path+1][y_path] << " " << grid[x_path][y_path-1] << " " << grid[x_path][y_path+1] << std::endl;
@@ -354,36 +457,6 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
                 act_index = grid[x_path][y_path];
             }
             return path;
-            // break;
-            // std::cout << current.x << " " << current.y << std::endl;
-            // std::vector<PointQueue> path;
-            // path.push_back(current);
-   
-            // // Backtrack to reconstruct path
-            // PointQueue currentForPath = current;
-            // while (visited[currentForPath.y][currentForPath.x]) { // Loop until we reach the starting point
-            //     // Optional: If using parent field in PointQueue
-            //     // currentForPath = currentForPath.parent;
-            //     // Search visited grid for predecessor (point with distance-1)
-            //     for (int dx = -1; dx <= 1; dx++) {
-            //         for (int dy = -1; dy <= 1; dy++) {
-            //             int prevX = currentForPath.x + dx;
-            //             int prevY = currentForPath.y + dy;
-            //             std::cout << "prevX " << prevX << " prevY " << prevY << std::endl;
-            //             if (prevX >= 0 && prevX < cols && prevY >= 0 && prevY < rows && 
-            //                 visited[prevY][prevX] && grid[prevY][prevX] != 1 && 
-            //                 visited[prevY][prevX] == currentForPath.distance - 1) {
-            //                 path.push_back({prevX, prevY, currentForPath.distance - 1});
-            //                 currentForPath = {prevX, prevY, currentForPath.distance - 1};
-            //                 break; // Exit inner loop after finding predecessor
-            //             }
-            //         }
-            //     }
-            // }
-            // std::cout << "path size " << path.size() << std::endl;
-            // // Reverse the path for correct order (goal to start)
-            // std::reverse(path.begin(), path.end());
-            // return path;
         }
 
         // Explore neighbors (up, down, left, right)
@@ -413,15 +486,19 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
                             int prevY = newY + dyy;
                             if (prevX >= 0 && prevX < cols && prevY >= 0 && prevY < rows && grid[prevX][prevY] != 1 && 
                                 grid[prevX][prevY] >= lowest_index) {
-                                // std::cout << lowest_index << " " << grid[prevX][prevY] << std::endl;
+                                std::cout << lowest_index << " " << grid[prevX][prevY] << std::endl;
                                 lowest_index = grid[prevX][prevY]+1;
                             }
                         }
                     }
+                    std::cout << newX << " " << newY << " " << lowest_index << map.get_coordinates()[newX][newY].getX() << " " << map.get_coordinates()[newX][newY].getY() <<  std::endl;
                     map.update_map(Point(map.get_coordinates()[newX][newY].getX(), map.get_coordinates()[newX][newY].getY(), 0), lowest_index);
+                    std::cout << newX << " " << newY << " " << lowest_index << std::endl;
+                    
                 }
             }
         }
+        // print_map();
     }
 
     // No path found

@@ -151,6 +151,7 @@ private:
     
     bool rot_only;
     uint8_t mapping;
+    bool mapping_start = false;
     bool read_map = false;
 
 public slots:

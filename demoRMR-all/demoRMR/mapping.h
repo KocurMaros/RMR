@@ -21,14 +21,13 @@ struct PointQueue {
     return distance > other.distance; // Prioritize closer points
     }
 };
-
 class Mapping
 {
 private:
     bool geno = true;
     std::vector<Hash_map> map_vector;
     Hash_map map;
-    std::string  map_file = "map2.txt";
+    std::string  map_file = "map5.txt";
 public:
     Mapping(/* args */);
     ~Mapping();
@@ -40,5 +39,6 @@ public:
     void print_map();
     std::vector<Point> flood_fill(Point start, Point goal);
     std::vector<Point> floodFillPathfind(int startX, int startY, int goalX, int goalY);
+    void create_new_map(double obstacleX, double obstacleY, double robotTheta);
 };
 #endif
