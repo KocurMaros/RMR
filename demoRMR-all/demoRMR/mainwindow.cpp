@@ -212,7 +212,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         // actual.y = 1000*robotY;
         // actual.theta = robotFi*PI/180.0;
         actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
-        if (bruh) {
+        if (bruh || mapping_start) {
             double rot_speed;
             int trans_speed, radius;
             if (!points_vector.empty()){
@@ -289,15 +289,12 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     }
     // if(mapping == 10 && mapping_start){
 
-    if(mapping == 10){
-        mapping++;
-        maps->save_map();
+    if(mapping == 10 && mapping_start){
         mapping_start = false;
+        maps->save_map();
         maps->print_map();
     }
     datacounter++;
-
-
     return 0;
 
 }
@@ -375,8 +372,8 @@ void MainWindow::on_pushButton_mapping_clicked(){
     points_vector.push_back(Point(2.9*1000,-0.2*1000,0));
     points_vector.push_back(Point(2.9*1000,-0.7*1000,0));
     points_vector.push_back(Point(1*1000,-1.35*1000,0));
-    bruh = true;
-    // mapping_start = true;
+    mapping = 0;
+    mapping_start = true;
 }
 void MainWindow::on_pushButton_loadMap_clicked(){
 
