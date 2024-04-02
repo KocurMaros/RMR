@@ -228,6 +228,12 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
 
             if(isThereObstacleInZone()){
+                //TODO: hladat edges len od -180 po 180 od aktualneho uhla
+                findEdgeLeft();
+                //hladaj edges vlavo
+                findEdgeRight();
+                //hladaj edges vpravo
+
                 std::cout << "COLLISION DETECTED!" << std::endl;
                 robot.setTranslationSpeed(0);
                 return 0;
@@ -442,10 +448,19 @@ void MainWindow::on_pushButton_10_clicked()
 bool MainWindow::isThereObstacleInZone() {
     for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++){
         if(collision_detection.isObstacleInPath(copyOfLaserData.Data[k].scanDistance/1000.0,copyOfLaserData.Data[k].scanAngle,controller->error_angle/PI*180,controller->error_distance/1000.0)){
+            collision_detection.getObstacle().setIndex(k);
             return true;
         }
     }
     return false;
+}
+
+void MainWindow::findEdgeLeft(){
+
+}
+
+void MainWindow::findEdgeRight(){
+
 }
 
 void MainWindow::on_pushButton_11_clicked()

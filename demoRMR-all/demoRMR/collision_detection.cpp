@@ -38,6 +38,8 @@ bool CollisionDetection::isObstacleInPath(double scanDistance, double scanAngle,
             scanCritical = maxDistance;
         }
         if (scanDistance <= scanCritical){
+            obstacle.setDistance(scanDistance);
+            obstacle.setAngle(scanAngle);
             return true;
         }
     }
