@@ -149,7 +149,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     if(first_run){
         start_left = robotdata.EncoderLeft;
         start_right = robotdata.EncoderRight;
-        start_gyro = robotdata.GyroAngle;
+        start_gyro = robotdata.GyroAngle/100.;
+        robotFi_gyro = start_gyro/100.0;
         first_run = false;
         prev_left = start_left;
         prev_right = start_right;
@@ -181,6 +182,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         delta_wheel_right = calculateEncoderDelta(prev_right, robotdata.EncoderRight); //TODO: vyhodit funkciu kvoli speed a dat kod napriamo sem? 
         delta_wheel_left = calculateEncoderDelta(prev_left, robotdata.EncoderLeft);
         robotFi = robotFi + (delta_wheel_right - delta_wheel_left) / WHEELBASE/PI*180.0;
+        robotFi_gyro = robotdata.GyroAngle/100.0;
         if (robotFi >= 180){
             robotFi = robotFi - 360;
         }
@@ -238,7 +240,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             if(rot_speed < 0.01 && error_distance > 500 ){
                 // cout << "CAll "<< rot_speed << " " << trans_speed << endl;
                 if(mapping_start)
-                    maps->Gmapping(copyOfLaserData, robotX, robotY, robotFi);
+                    maps->Gmapping(copyOfLaserData, robotX, robotY, (robotFi_gyro-start_gyro));
                 prev_x_map = actual_point->getX();
                 prev_y_map = actual_point->getY();
             }
@@ -298,7 +300,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     }
     // if(mapping == 10 && mapping_start){
 
-    if(mapping == 10 && mapping_start){
+    if(mapping == 4 && mapping_start){
         cout << "Mapping finished" << endl;
         mapping_start = false;
         maps->save_map();
@@ -376,20 +378,22 @@ void MainWindow::on_pushButton_mapping_clicked(){
     points_vector.push_back(Point(0*1000,3.5*1000,0));
     points_vector.push_back(Point(4*1000,3.5*1000,0));
     points_vector.push_back(Point(3*1000,3.5*1000,0));
-    points_vector.push_back(Point(3*1000,0.3*1000,0));
-    points_vector.push_back(Point(4*1000,0.3*1000,0));
-    points_vector.push_back(Point(2.5*1000,0.3*1000,0));
-    points_vector.push_back(Point(2.5*1000,-0.2*1000,0));
-    // points_vector.push_back(Point(2.9*1000,-0.7*1000,0));
-    points_vector.push_back(Point(1*1000,-1.1*1000,0));
-    points_vector.push_back(Point(0.6*1000,-1.1*1000,0));
+    // points_vector.push_back(Point(3*1000,0.3*1000,0));
+    // points_vector.push_back(Point(4*1000,0.3*1000,0));
+    // points_vector.push_back(Point(2.5*1000,0.3*1000,0));
+    // points_vector.push_back(Point(2.5*1000,-0.2*1000,0));
+    // // points_vector.push_back(Point(2.9*1000,-0.7*1000,0));
+    // points_vector.push_back(Point(1*1000,-1.1*1000,0));
+    // points_vector.push_back(Point(0.6*1000,-1.1*1000,0));
     mapping = 0;
     mapping_start = true;
 }
 void MainWindow::on_pushButton_loadMap_clicked(){
 
-    // maps->load_map();
-    // maps->print_map();
+    maps->load_map();
+    maps->print_map();
+
+    /*
     bool xOK = true,yOK = true;
     double x = ui->lineEdit_5->text().toDouble(&xOK);
     double y = ui->lineEdit_6->text().toDouble(&yOK);
@@ -408,7 +412,6 @@ void MainWindow::on_pushButton_loadMap_clicked(){
     else {
         std::cout << "incorrect input!" << std::endl;
     }
-    /*
     */
 }
 void MainWindow::on_pushButton_2_clicked() //forward

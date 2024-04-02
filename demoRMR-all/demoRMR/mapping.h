@@ -6,7 +6,7 @@
 #include <fstream>
 
 #include <rplidar.h>
-#include <math.h>
+#include <qmath.h>
 #include "hash_map.h"
 #include "point.h"
 #include <queue>
@@ -26,7 +26,7 @@ class Mapping
 private:
     std::vector<Hash_map> map_vector;
     Hash_map map;
-    std::string  map_file = "map_real1.txt";
+    std::string  map_file = "map_real2.txt";
 public:
     Mapping(/* args */);
     ~Mapping();

@@ -12,7 +12,7 @@ TARGET = demoRMR
 TEMPLATE = app
 win32 {
 LIBS += -lws2_32
-LIBS += -lWinmm
+LIBS += -lWinmm 
 }
 INCLUDEPATH += ../robot
 LIBS += -L../bin -lrobot

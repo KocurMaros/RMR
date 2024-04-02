@@ -149,6 +149,8 @@ private:
     double robotFi;
     double prev_fi;
     
+    double robotFi_gyro;
+   
     bool rot_only;
     uint8_t mapping;
     bool mapping_start = false;
