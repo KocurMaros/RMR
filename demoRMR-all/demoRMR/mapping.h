@@ -26,7 +26,7 @@ class Mapping
 private:
     std::vector<Hash_map> map_vector;
     Hash_map map;
-    std::string  map_file = "map5.txt";
+    std::string  map_file = "map_real1.txt";
 public:
     Mapping(/* args */);
     ~Mapping();

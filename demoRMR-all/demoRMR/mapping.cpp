@@ -111,14 +111,14 @@ void Mapping::load_map()
                 // std::cout << arg1 << " " << arg2 << std::endl;
                 // Point point(arg1, arg2, 0);
                 map.update_map(Point(arg1,arg2,0), 1);
-                map.update_map(Point(arg1,arg2+10,0), 1);
-                map.update_map(Point(arg1,arg2-10,0), 1);
-                map.update_map(Point(arg1+10,arg2,0), 1);
-                map.update_map(Point(arg1-10,arg2,0), 1);
-                map.update_map(Point(arg1,arg2+20,0), 1);
-                map.update_map(Point(arg1,arg2-20,0), 1);
-                map.update_map(Point(arg1+20,arg2,0), 1);
-                map.update_map(Point(arg1-20,arg2,0), 1);
+                // map.update_map(Point(arg1,arg2+10,0), 1);
+                // map.update_map(Point(arg1,arg2-10,0), 1);
+                // map.update_map(Point(arg1+10,arg2,0), 1);
+                // map.update_map(Point(arg1-10,arg2,0), 1);
+                // map.update_map(Point(arg1,arg2+20,0), 1);
+                // map.update_map(Point(arg1,arg2-20,0), 1);
+                // map.update_map(Point(arg1+20,arg2,0), 1);
+                // map.update_map(Point(arg1-20,arg2,0), 1);
             }
             start = line.find('[', end);
             end = line.find(']', start);

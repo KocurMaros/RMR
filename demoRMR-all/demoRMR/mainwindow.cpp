@@ -28,8 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-    // ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
-    ipaddress="127.0.0.1";
+    ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    // ipaddress="127.0.0.1";
   //  cap.open("http://192.168.1.11:8000/stream.mjpg");
     ui->setupUi(this);
     datacounter=0;
@@ -105,6 +105,14 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
                     painter.drawEllipse(QPoint(xp, yp),2,2);
             }
+            int xrobot = rect.width() / 2;
+            int yrobot = rect.height() / 2;
+            int xpolomer = 20;
+            int ypolomer = 20;
+
+            painter.drawEllipse(QPoint(rect.x() + xrobot, rect.y() + yrobot), xpolomer, ypolomer);
+            painter.drawLine(rect.x() + xrobot, rect.y() + yrobot, rect.x() + xrobot + xpolomer * cos((360 - 90) * 3.14159 / 180),
+                            rect.y() + ((yrobot + ypolomer * sin((360 - 90) * 3.14159 / 180))));
         }
     }
 }
@@ -229,7 +237,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
             if(rot_speed < 0.01 && error_distance > 500 ){
                 // cout << "CAll "<< rot_speed << " " << trans_speed << endl;
-                maps->Gmapping(copyOfLaserData, robotX, robotY, robotFi);
+                if(mapping_start)
+                    maps->Gmapping(copyOfLaserData, robotX, robotY, robotFi);
                 prev_x_map = actual_point->getX();
                 prev_y_map = actual_point->getY();
             }
@@ -290,6 +299,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     // if(mapping == 10 && mapping_start){
 
     if(mapping == 10 && mapping_start){
+        cout << "Mapping finished" << endl;
         mapping_start = false;
         maps->save_map();
         maps->print_map();
@@ -364,19 +374,22 @@ void MainWindow::on_pushButton_mapping_clicked(){
     std::cout << "Mapping started" << std::endl;
     points_vector.push_back(Point(0*1000,0*1000,0));
     points_vector.push_back(Point(0*1000,3.5*1000,0));
-    points_vector.push_back(Point(4*1000,4*1000,0));
-    points_vector.push_back(Point(3*1000,4*1000,0));
-    points_vector.push_back(Point(3*1000,0.5*1000,0));
-    points_vector.push_back(Point(5*1000,0.5*1000,0));
-    points_vector.push_back(Point(3.9*1000,0.3*1000,0));
-    points_vector.push_back(Point(2.9*1000,-0.2*1000,0));
-    points_vector.push_back(Point(2.9*1000,-0.7*1000,0));
-    points_vector.push_back(Point(1*1000,-1.35*1000,0));
+    points_vector.push_back(Point(4*1000,3.5*1000,0));
+    points_vector.push_back(Point(3*1000,3.5*1000,0));
+    points_vector.push_back(Point(3*1000,0.3*1000,0));
+    points_vector.push_back(Point(4*1000,0.3*1000,0));
+    points_vector.push_back(Point(2.5*1000,0.3*1000,0));
+    points_vector.push_back(Point(2.5*1000,-0.2*1000,0));
+    // points_vector.push_back(Point(2.9*1000,-0.7*1000,0));
+    points_vector.push_back(Point(1*1000,-1.1*1000,0));
+    points_vector.push_back(Point(0.6*1000,-1.1*1000,0));
     mapping = 0;
     mapping_start = true;
 }
 void MainWindow::on_pushButton_loadMap_clicked(){
 
+    // maps->load_map();
+    // maps->print_map();
     bool xOK = true,yOK = true;
     double x = ui->lineEdit_5->text().toDouble(&xOK);
     double y = ui->lineEdit_6->text().toDouble(&yOK);
@@ -395,6 +408,8 @@ void MainWindow::on_pushButton_loadMap_clicked(){
     else {
         std::cout << "incorrect input!" << std::endl;
     }
+    /*
+    */
 }
 void MainWindow::on_pushButton_2_clicked() //forward
 {
