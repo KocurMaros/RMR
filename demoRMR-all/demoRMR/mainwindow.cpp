@@ -227,15 +227,21 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
 
-            if(isThereObstacleInZone()){
+            //check if the path is right
+            if(isThereObstacleInZone(controller->error_angle/PI*180,controller->error_distance/1000.0)){
                 //TODO: hladat edges len od -180 po 180 od aktualneho uhla
                 findEdgeLeft();
-                //hladaj edges vlavo
+                // //hladaj edges vlavo
                 findEdgeRight();
                 //hladaj edges vpravo
 
-                std::cout << "COLLISION DETECTED!" << std::endl;
-                robot.setTranslationSpeed(0);
+                //zapamatat si vzdialenost od prekazky?
+                //ak sa najde iba jeden edge - > nastavit ciel na edge
+                //ak sa najdu oba edges -> porovnat vzdialenosti a nastavit ciel na ten ktory je blizsie
+
+                //ak sa nenajde edge -> sleduj stenu TODO:
+
+                //nastavi novy bod i guess?
                 return 0;
             }
 
@@ -445,9 +451,9 @@ void MainWindow::on_pushButton_10_clicked()
 
 }
 
-bool MainWindow::isThereObstacleInZone() {
+bool MainWindow::isThereObstacleInZone(double zoneAngle, double zoneDistance) {
     for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++){
-        if(collision_detection.isObstacleInPath(copyOfLaserData.Data[k].scanDistance/1000.0,copyOfLaserData.Data[k].scanAngle,controller->error_angle/PI*180,controller->error_distance/1000.0)){
+        if(collision_detection.isObstacleInPath(copyOfLaserData.Data[k].scanDistance/1000.0,copyOfLaserData.Data[k].scanAngle,zoneAngle,zoneDistance)){
             collision_detection.getObstacle().setIndex(k);
             return true;
         }
@@ -456,7 +462,37 @@ bool MainWindow::isThereObstacleInZone() {
 }
 
 void MainWindow::findEdgeLeft(){
+    double angle_difference = 0;
+    double prev_distance = collision_detection.getObstacle().getDistance();
+    double prev_angle = collision_detection.getObstacle().getAngle();
+    //zaciname uz o jeden dalej preto index - 1
+    collision_detection.getObstacle().getLeftEdge().setFoundEdge(false);
+    int lidar_index = collision_detection.getObstacle().getIndex()-1;
+    //lidar je pravotocivy -> ked hladam nalavo tak musim zmensit index
+    //distance je v metroch
 
+    while(angle_difference < 180){
+        if(lidar_index < 0){
+            lidar_index = copyOfLaserData.numberOfScans - 1;
+        }
+
+        double lidar_angle = CollisionDetection::normalizeLidarAngle(copyOfLaserData.Data[lidar_index].scanAngle);
+        double lidar_distance = copyOfLaserData.Data[lidar_index].scanDistance/1000.0;
+
+        if((lidar_distance - prev_distance > Obstacle::distanceThreshold) || lidar_distance == 0.0){
+
+            //TODO: vratit roh predoslej vzdialenosti a predosleho uhla asi zejo (zatim mam ze tento uhol)
+            collision_detection.getObstacle().getLeftEdge().setFoundEdge(true);
+            collision_detection.getObstacle().getLeftEdge().setDistance(prev_distance);
+            collision_detection.getObstacle().getLeftEdge().setAngle(prev_angle);
+            break;
+        }
+
+        prev_distance = lidar_distance;
+        prev_angle = lidar_angle;
+        angle_difference = fabs(collision_detection.getObstacle().getAngle() - lidar_angle);
+        lidar_index--;
+    }
 }
 
 void MainWindow::findEdgeRight(){

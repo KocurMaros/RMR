@@ -10,9 +10,7 @@ bool CollisionDetection::isObstacleInPath(double scanDistance, double scanAngle,
     //zoneAngle je relativny od osi robota lavotocivy, -180 az 180, scanAngle - nula je vpredu robota, pravotocivy ide od 0 od 360
 
     //normalizacia uhlu z lidaru
-    if (scanAngle > 180)
-        scanAngle = 360 - scanAngle;
-    else scanAngle = - scanAngle;
+    scanAngle = normalizeLidarAngle(scanAngle);
 
 
     //normalizacia angle erroru v zone
@@ -45,3 +43,13 @@ bool CollisionDetection::isObstacleInPath(double scanDistance, double scanAngle,
     }
     return false;
 }
+
+double CollisionDetection::normalizeLidarAngle(double angle){
+    if (angle > 180)
+        angle = 360 - angle;
+    else angle = - angle;
+
+    return angle;
+}
+
+

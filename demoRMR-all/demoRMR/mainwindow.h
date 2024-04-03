@@ -93,7 +93,7 @@ private:
 
     void addPointAtStart(Point p);
     double calculateEncoderDelta(int prev, int actual);
-    bool isThereObstacleInZone();
+    bool isThereObstacleInZone(double zoneAngle, double zoneDistance);
     void findEdgeLeft();
     void findEdgeRight();
 
