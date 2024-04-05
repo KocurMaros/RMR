@@ -60,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     controller->clearIntegral();
     shortest_distance_to_goal = 0;
     current_distance_to_goal = 0;
-    collision_detection.getObstacle().setFoundObstacle(false);
+    collision_detection.getObstacle()->setFoundObstacle(false);
 
 }
 
@@ -95,15 +95,35 @@ void MainWindow::paintEvent(QPaintEvent *event)
         if(updateLaserPicture==1) ///ak mam nove data z lidaru
         {
             updateLaserPicture=0;
-
+            pero.setColor(Qt::green);//farba je zelena
             painter.setPen(pero);
             //teraz tu kreslime random udaje... vykreslite to co treba... t.j. data z lidaru
-         //   std::cout<<copyOfLaserData.numberOfScans<<std::endl;
             for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
             {
                 int dist=copyOfLaserData.Data[k].scanDistance/20; ///vzdialenost nahodne predelena 20 aby to nejako vyzeralo v okne.. zmen podla uvazenia
                 int xp=rect.width()-(rect.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().x(); //prepocet do obrazovky
                 int yp=rect.height()-(rect.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().y();//prepocet do obrazovky
+                if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+                    painter.drawEllipse(QPoint(xp, yp),2,2);
+
+                }
+            }
+        // if(collision_detection.getObstacle()->isFoundObstacle()){
+        //     if(collision_detection.getObstacle()->getLeftEdge()->isFoundEdge()){
+        //         int xp=rect.width()-(rect.width()/2+collision_detection.getObstacle()->getLeftEdge()->getDistance()*100*sin((collision_detection.getObstacle()->getLeftEdge()->getAngle())*3.14159/180.0))+rect.topLeft().x();
+        //         int yp = rect.height()-(rect.height()/2+collision_detection.getObstacle()->getLeftEdge()->getDistance()*100*cos((collision_detection.getObstacle()->getLeftEdge()->getAngle())*3.14159/180.0))+rect.topLeft().y();
+        //         pero.setColor(Qt::blue);//farba je zelena je ne?
+        //         painter.setPen(pero);
+        //         if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+        //             painter.drawEllipse(QPoint(xp, yp),2,2);
+        //     }
+        // }
+        if(collision_detection.getObstacle()->isFoundObstacle()){
+            if(collision_detection.getObstacle()->getRightEdge()->isFoundEdge()){
+                int xp=rect.width()-(rect.width()/2+collision_detection.getObstacle()->getRightEdge()->getDistance()*100*sin((collision_detection.getObstacle()->getRightEdge()->getAngle())*3.14159/180.0))+rect.topLeft().x();
+                int yp = rect.height()-(rect.height()/2+collision_detection.getObstacle()->getRightEdge()->getDistance()*100*cos((collision_detection.getObstacle()->getRightEdge()->getAngle())*3.14159/180.0))+rect.topLeft().y();
+                pero.setColor(Qt::blue);//farba je zelena je ne?
+                painter.setPen(pero);
                 if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
                     painter.drawEllipse(QPoint(xp, yp),2,2);
             }
@@ -136,7 +156,7 @@ double MainWindow::calculateEncoderDelta(int prev, int actual) {
 
 }
 
-///toto je calback na data z robota, ktory ste podhodili robotu vo funkcii on_pushButton_9_clicked
+///toto je calback na data z robota, ktory ste podhodili robotu vo funkcii on_pushButton_9_click`ed
 /// vola sa vzdy ked dojdu nove data z robota. nemusite nic riesit, proste sa to stane
 int MainWindow::processThisRobot(TKobukiData robotdata)
 {
@@ -192,7 +212,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
 
 
-        // std::cout << "encoder: " << robotdata.EncoderLeft << std::endl;
 
         ///ak nastavite hodnoty priamo do prvkov okna,ako je to na tychto zakomentovanych riadkoch tak sa moze stat ze vam program padne
                 // ui->lineEdit_2->setText(QString::number(robotdata.EncoderRight));
@@ -228,27 +247,37 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             //toto vzdy nastavi ciel, ak je vo vektore bodov aspon jeden bod
 
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
-
             //check if the path is right
             //TODO: add flag if the object has already been found
-            if(!collision_detection.getObstacle().isFoundObstacle() && isThereObstacleInZone(controller->error_angle/PI*180,controller->error_distance/1000.0)){
+            if (!collision_detection.getObstacle()->isFoundObstacle()){
+                std::cout<< "Obstacle: " << collision_detection.getObstacle()->isFoundObstacle() << std::endl;
 
-                std::cout<< "Obstacle has been found!" << std::endl;
-                findEdgeLeft();
-                if(collision_detection.getObstacle().getLeftEdge().isFoundEdge()){
-                    std::cout << "Obstacle left edge has been found!" << std::endl;
+                if(isThereObstacleInZone(controller->error_angle/PI*180,controller->error_distance/1000.0)){
+
+                    std::cout<< "Obstacle has been found!" << std::endl;
+                    // findEdgeLeft();
+                    // if(collision_detection.getObstacle()->getLeftEdge()->isFoundEdge()){
+                    //     std::cout << "Obstacle left edge has been found!" << std::endl;
+                    // }
+
+                    findEdgeRight();
+                    if(collision_detection.getObstacle()->getRightEdge()->isFoundEdge()){
+                        std::cout << "Obstacle right edge has been found!" << std::endl;
+                    }
+
+
+                    //zapamatat si vzdialenost od prekazky?
+                    //ak sa najde iba jeden edge - > nastavit ciel na edge
+                    //ak sa najdu oba edges -> porovnat vzdialenosti a nastavit ciel na ten ktory je blizsie
+
+                    //ak sa nenajde edge -> sleduj stenu TODO:
+
+                    //nastavi novy bod i guess?
+                    return 0;
                 }
-                // //hladaj edges vlavo
-                // findEdgeRight();
-                //hladaj edges vpravo
 
-                //zapamatat si vzdialenost od prekazky?
-                //ak sa najde iba jeden edge - > nastavit ciel na edge
-                //ak sa najdu oba edges -> porovnat vzdialenosti a nastavit ciel na ten ktory je blizsie
-
-                //ak sa nenajde edge -> sleduj stenu TODO:
-
-                //nastavi novy bod i guess?
+            }
+            else{
                 return 0;
             }
 
@@ -461,9 +490,9 @@ void MainWindow::on_pushButton_10_clicked()
 bool MainWindow::isThereObstacleInZone(double zoneAngle, double zoneDistance) {
     for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++){
         if(collision_detection.isObstacleInPath(copyOfLaserData.Data[k].scanDistance/1000.0,copyOfLaserData.Data[k].scanAngle,zoneAngle,zoneDistance)){
-            collision_detection.getObstacle().setIndex(k);
-            collision_detection.getObstacle().setFoundObstacle(true);
-            std::cout << "THERE IS AN OBSTACLE" << std::endl;
+            collision_detection.getObstacle()->setIndex(k);
+            collision_detection.getObstacle()->setFoundObstacle(true);
+            std::cout << "THERE IS AN OBSTACLE, :" << collision_detection.getObstacle()->isFoundObstacle() << std::endl;
             collision_detection.setLaserData(copyOfLaserData);
             return true;
         }
@@ -473,18 +502,17 @@ bool MainWindow::isThereObstacleInZone(double zoneAngle, double zoneDistance) {
 
 void MainWindow::findEdgeLeft(){
     double angle_difference = 0;
-    double prev_distance = collision_detection.getObstacle().getDistance();
-    double prev_angle = collision_detection.getObstacle().getAngle();
+    double prev_distance = collision_detection.getObstacle()->getDistance();
+    double prev_angle = collision_detection.getObstacle()->getAngle();
     //zaciname uz o jeden dalej preto index - 1
-    collision_detection.getObstacle().getLeftEdge().setFoundEdge(false);
-    int lidar_index = collision_detection.getObstacle().getIndex()-1;
+    collision_detection.getObstacle()->getLeftEdge()->setFoundEdge(false);
+    int lidar_index = collision_detection.getObstacle()->getIndex()-1;
     //lidar je pravotocivy -> ked hladam nalavo tak musim zmensit index
     //distance je v metroch
 
     std::cout << "CHECKING LEFT EDGE" << std::endl;
 
     while(angle_difference < 180){
-        std::cout << "ALL GOOD" << std::endl;
         if(lidar_index < 0){
             lidar_index = collision_detection.getLaserData().numberOfScans - 1;
         }
@@ -492,28 +520,64 @@ void MainWindow::findEdgeLeft(){
         double lidar_angle = CollisionDetection::normalizeLidarAngle(collision_detection.getLaserData().Data[lidar_index].scanAngle);
         double lidar_distance = collision_detection.getLaserData().Data[lidar_index].scanDistance/1000.0;
 
-        std::cout << "lidar_angle: " << lidar_angle << " lidar_distance: " << lidar_distance << std::endl;
-        std::cout << "prev_angle: " << prev_angle << " prev_distance: " << prev_distance << std::endl;
+        // std::cout << "lidar_angle: " << lidar_angle << " lidar_distance: " << lidar_distance << std::endl;
+        // std::cout << "prev_angle: " << prev_angle << " prev_distance: " << prev_distance << std::endl;
 
         if((lidar_distance - prev_distance > Obstacle::distanceThreshold) || lidar_distance == 0.0){
 
             //TODO: vratit roh predoslej vzdialenosti a predosleho uhla asi zejo
-            collision_detection.getObstacle().getLeftEdge().setFoundEdge(true);
-            collision_detection.getObstacle().getLeftEdge().setDistance(prev_distance);
-            collision_detection.getObstacle().getLeftEdge().setAngle(prev_angle);
+            collision_detection.getObstacle()->getLeftEdge()->setFoundEdge(true);
+            collision_detection.getObstacle()->getLeftEdge()->setDistance(prev_distance);
+            collision_detection.getObstacle()->getLeftEdge()->setAngle(prev_angle);
             std::cout << "LEFT EDGE FOUND" << std::endl;
             break;
         }
 
         prev_distance = lidar_distance;
         prev_angle = lidar_angle;
-        angle_difference = fabs(collision_detection.getObstacle().getAngle() - lidar_angle);
+        angle_difference = fabs(collision_detection.getObstacle()->getAngle() - lidar_angle);
         lidar_index--;
     }
 }
 
 void MainWindow::findEdgeRight(){
+    double angle_difference = 0;
+    double prev_distance = collision_detection.getObstacle()->getDistance();
+    double prev_angle = collision_detection.getObstacle()->getAngle();
+    //zaciname uz o jeden dalej preto index - 1
+    collision_detection.getObstacle()->getRightEdge()->setFoundEdge(false);
+    int lidar_index = collision_detection.getObstacle()->getIndex()+1;
+    //lidar je pravotocivy -> ked hladam napravo tak musim zvacsit index
+    //distance je v metroch
 
+    std::cout << "CHECKING RIGHT EDGE" << std::endl;
+
+    while(angle_difference < 180){
+        if(lidar_index > (collision_detection.getLaserData().numberOfScans - 1)){
+            lidar_index = 0;
+        }
+
+        double lidar_angle = CollisionDetection::normalizeLidarAngle(collision_detection.getLaserData().Data[lidar_index].scanAngle);
+        double lidar_distance = collision_detection.getLaserData().Data[lidar_index].scanDistance/1000.0;
+
+        // std::cout << "lidar_angle: " << lidar_angle << " lidar_distance: " << lidar_distance << std::endl;
+        // std::cout << "prev_angle: " << prev_angle << " prev_distance: " << prev_distance << std::endl;
+
+        if((lidar_distance - prev_distance > Obstacle::distanceThreshold) || lidar_distance == 0.0){
+
+            //TODO: vratit roh predoslej vzdialenosti a predosleho uhla asi zejo
+            collision_detection.getObstacle()->getRightEdge()->setFoundEdge(true);
+            collision_detection.getObstacle()->getRightEdge()->setDistance(prev_distance);
+            collision_detection.getObstacle()->getRightEdge()->setAngle(prev_angle);
+            std::cout << "RIGHT EDGE FOUND" << std::endl;
+            break;
+        }
+
+        prev_distance = lidar_distance;
+        prev_angle = lidar_angle;
+        angle_difference = fabs(collision_detection.getObstacle()->getAngle() - lidar_angle);
+        lidar_index++;
+    }
 }
 
 void MainWindow::on_pushButton_11_clicked()

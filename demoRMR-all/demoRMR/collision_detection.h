@@ -3,6 +3,7 @@
 #include <math.h>
 #include <rplidar.h>
 
+
 class Edge{
 private:
     double distance;
@@ -11,9 +12,9 @@ private:
 public:
     void setDistance(double distance) {this->distance = distance;}
     void setAngle(double angle) {this->angle = angle;}
-    double getDistance() const {return distance;}
-    double getAngle() const {return angle;}
-    bool isFoundEdge() const {return found_edge;}
+    double getDistance()  {return distance;}
+    double getAngle()  {return angle;}
+    bool isFoundEdge()  {return found_edge;}
     void setFoundEdge(bool found_edge) {this->found_edge = found_edge;}
 };
 
@@ -27,15 +28,15 @@ private:
     Edge right_edge;
 
 public:
-    double getDistance() const {return distance;}
-    double getAngle() const {return angle;}
-    int getIndex() const {return index;}
+    double getDistance()  {return distance;}
+    double getAngle()  {return angle;}
+    int getIndex()  {return index;}
     void setDistance(double distance) {this->distance = distance;}
     void setAngle(double angle) {this->angle = angle;}
     void setIndex(int index) {this->index = index;}
-    Edge getLeftEdge() const {return left_edge;}
-    Edge getRightEdge() const {return right_edge;}
-    bool isFoundObstacle() const {return found_obstacle;}
+    Edge* getLeftEdge()  {return &left_edge;}
+    Edge* getRightEdge()  {return &right_edge;}
+    bool isFoundObstacle()  {return found_obstacle;}
     void setFoundObstacle(bool found_obstacle) {this->found_obstacle = found_obstacle;}
     //TODO: scalovat podla initial vzdialenosti objektu (alebo podla vzdialenosti predosleho bodu ci co)?
     //TODO: doladit velkost distanceThresholdu.....
@@ -45,10 +46,10 @@ public:
 class CollisionDetection {
 public:
     bool isObstacleInPath(double scanDistance, double scanAngle, double zoneAngle, double zoneDistance);
-    Obstacle getObstacle() const {return obstacle;}
+    Obstacle *getObstacle()  {return &obstacle;}
     static double normalizeLidarAngle(double angle);
     void setLaserData(LaserMeasurement laser_data) {this->laser_data = laser_data;}
-    LaserMeasurement getLaserData() const {return laser_data;}
+    LaserMeasurement getLaserData()  {return laser_data;}
 
 private:
     Obstacle obstacle;
