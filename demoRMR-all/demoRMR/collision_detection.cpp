@@ -109,8 +109,8 @@ void Obstacle::calculateRightEdgePoint(double robotX, double robotY) {
     else if (alfa < -180) alfa += 360;
 
     c = c + CRITICAL_DISTANCE+0.01;
-    double x = robotX +  c * sin(alfa);
-    double y = robotY + c * cos(alfa);
+    double x = robotX +  c * cos(alfa);
+    double y = robotY + c * sin(alfa);
     getRightEdge()->getPoint()->setPoint(x*1000,y*1000,0);
 }
 

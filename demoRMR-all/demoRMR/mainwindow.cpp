@@ -127,8 +127,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
                 pero.setColor(Qt::red);
                 painter.setPen(pero);
-                xp = rect.width()-(rect.width()/2+collision_detection.getObstacle()->getLeftEdge()->getPoint()->getX()/10)+rect.topLeft().x();
-                yp = rect.height()-(rect.height()/2+collision_detection.getObstacle()->getLeftEdge()->getPoint()->getY()/10)+rect.topLeft().y();
+                xp = rect.width()-(rect.width()/2+distance_forDebug*100*sin(angle_forDebug*3.14159/180.0))+rect.topLeft().x();
+                yp = rect.height()-(rect.height()/2+distance_forDebug*100*cos(angle_forDebug*3.14159/180.0))+rect.topLeft().y();
                 if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
                     painter.drawEllipse(QPoint(xp, yp),2,2);
             }
@@ -142,12 +142,12 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
                     painter.drawEllipse(QPoint(xp, yp),2,2);
 
-                pero.setColor(Qt::red);
-                painter.setPen(pero);
-                xp = rect.width()-(rect.width()/2+collision_detection.getObstacle()->getRightEdge()->getPoint()->getX()/10)+rect.topLeft().x();
-                yp = rect.height()-(rect.height()/2+collision_detection.getObstacle()->getRightEdge()->getPoint()->getY()/10)+rect.topLeft().y();
-                if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
-                    painter.drawEllipse(QPoint(xp, yp),2,2);
+                // pero.setColor(Qt::red);
+                // painter.setPen(pero);
+                // xp = rect.width()-(rect.width()/2+collision_detection.getObstacle()->getRightEdge()->getPoint()->getX()/10)+rect.topLeft().x();
+                // yp = rect.height()-(rect.height()/2+collision_detection.getObstacle()->getRightEdge()->getPoint()->getY()/10)+rect.topLeft().y();
+                // if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+                //     painter.drawEllipse(QPoint(xp, yp),2,2);
             }
         }
     }
@@ -283,6 +283,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                         collision_detection.getObstacle()->calculateLeftEdgePoint(robotX,robotY);
                         if (!checkLeftEdgePointObstacle())
                             std::cout << "there is no obstacle brother" << std::endl;
+                        // addPointAtStart(*collision_detection.getObstacle()->getLeftEdge()->getPoint());
+                        // collision_detection.getObstacle()->setFoundObstacle(false);
                     }
 
                     findEdgeRight();
@@ -621,12 +623,13 @@ bool MainWindow::checkLeftEdgePointObstacle(){
 
 
     double angle = atan2(collision_detection.getObstacle()->getLeftEdge()->getPoint()->getY()/1000.0 - robotY, collision_detection.getObstacle()->getLeftEdge()->getPoint()->getX()/1000.0 - robotX) - robotFi*PI/180;
-
     if (angle > PI) {
         angle -= 2 * PI;
     } else if (angle <= -PI) {
         angle += 2 * PI;
     }
+    distance_forDebug = distance;
+    angle_forDebug = angle/PI*180;
     std::cout << "angle: " << angle/PI*180 << " distance: " << distance << std::endl;
     return isThereObstacleInZoneStatic(angle/PI*180,distance);
 }

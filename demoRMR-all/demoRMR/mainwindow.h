@@ -112,6 +112,9 @@ private:
     std::shared_ptr<Point> set_point;
     std::shared_ptr<Point> desired_point;
     CollisionDetection collision_detection;
+
+    double distance_forDebug = 0;
+    double angle_forDebug = 0;
     
 
     std::vector<Point> points_vector;
