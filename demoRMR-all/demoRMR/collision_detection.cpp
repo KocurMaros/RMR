@@ -88,20 +88,29 @@ double CollisionDetection::normalizeLidarAngle(double angle){
 }
 
 void Obstacle::calculateLeftEdgePoint(double robotX, double robotY) {
-    double c = sqrt(pow(getLeftEdge()->getDistance(),2) + pow(CRITICAL_DISTANCE,2));
-    double alfa = asin(CRITICAL_DISTANCE/c);
-    c = c + CRITICAL_DISTANCE;
-    double x = robotX +  c * sin(alfa + getLeftEdge()->getAngle() * PI / 180);
-    double y = robotY + c * cos(alfa + getLeftEdge()->getAngle() * PI / 180);
+    double c = sqrt(pow(getLeftEdge()->getDistance(),2) + pow(CRITICAL_DISTANCE*3/2,2));
+    double alfa = asin(CRITICAL_DISTANCE*3/2/c)+ getLeftEdge()->getAngle() * PI / 180;
+
+    if (alfa >= 180) alfa -= 360;
+    else if (alfa < -180) alfa += 360;
+
+    //check if it is normal
+    // c = c + CRITICAL_DISTANCE+0.01;
+    double x = robotX +  c * cos(alfa);
+    double y = robotY + c * sin(alfa);
     getLeftEdge()->getPoint()->setPoint(x*1000,y*1000,0);
 }
 
 void Obstacle::calculateRightEdgePoint(double robotX, double robotY) {
-    double c = sqrt(pow(getRightEdge()->getDistance(),2) + pow(CRITICAL_DISTANCE,2));
-    double alfa = asin(CRITICAL_DISTANCE/c);
-    c = c + CRITICAL_DISTANCE;
-    double x = robotX +  c * sin(getRightEdge()->getAngle() * PI / 180 - alfa);
-    double y = robotY + c * cos(getRightEdge()->getAngle() * PI / 180 - alfa);
+    double c = sqrt(pow(getRightEdge()->getDistance(),2) + pow(CRITICAL_DISTANCE+0.01,2));
+    double alfa = getRightEdge()->getAngle() * PI / 180 - asin(CRITICAL_DISTANCE+0.01/c);
+
+    if (alfa >= 180) alfa -= 360;
+    else if (alfa < -180) alfa += 360;
+
+    c = c + CRITICAL_DISTANCE+0.01;
+    double x = robotX +  c * sin(alfa);
+    double y = robotY + c * cos(alfa);
     getRightEdge()->getPoint()->setPoint(x*1000,y*1000,0);
 }
 

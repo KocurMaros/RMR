@@ -94,17 +94,25 @@ void MainWindow::paintEvent(QPaintEvent *event)
     {
         if(updateLaserPicture==1) ///ak mam nove data z lidaru
         {
-            updateLaserPicture=0;
             pero.setColor(Qt::green);//farba je zelena
             painter.setPen(pero);
+            updateLaserPicture=0;
+            int x = rect.width()-(rect.width()/2)+rect.topLeft().x();
+            int y = rect.height()-(rect.height()/2)+rect.topLeft().y();
+
+            if (rect.contains(x,y)){
+                painter.drawEllipse(QPoint(x, y),16,16);
+            }
             //teraz tu kreslime random udaje... vykreslite to co treba... t.j. data z lidaru
             for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
             {
-                int dist=copyOfLaserData.Data[k].scanDistance/20; ///vzdialenost nahodne predelena 20 aby to nejako vyzeralo v okne.. zmen podla uvazenia
-                int xp=rect.width()-(rect.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().x(); //prepocet do obrazovky
-                int yp=rect.height()-(rect.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().y();//prepocet do obrazovky
-                if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
-                    painter.drawEllipse(QPoint(xp, yp),2,2);
+                if (copyOfLaserData.Data[k].scanDistance!=0){
+                    int dist=copyOfLaserData.Data[k].scanDistance/20; ///vzdialenost nahodne predelena 20 aby to nejako vyzeralo v okne.. zmen podla uvazenia
+                    int xp=rect.width()-(rect.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().x(); //prepocet do obrazovky
+                    int yp=rect.height()-(rect.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().y();//prepocet do obrazovky
+                    if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+                        painter.drawEllipse(QPoint(xp, yp),2,2);
+                }
 
                 }
             }
@@ -273,6 +281,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     if(collision_detection.getObstacle()->getLeftEdge()->isFoundEdge()){
                         std::cout << "Obstacle left edge has been found!" << std::endl;
                         collision_detection.getObstacle()->calculateLeftEdgePoint(robotX,robotY);
+                        if (!checkLeftEdgePointObstacle())
+                            std::cout << "there is no obstacle brother" << std::endl;
                     }
 
                     findEdgeRight();
@@ -503,6 +513,16 @@ void MainWindow::on_pushButton_10_clicked()
 
 }
 
+bool MainWindow::isThereObstacleInZoneStatic(double zoneAngle, double zoneDistance){
+    for(int k=0;k<collision_detection.getLaserData().numberOfScans/*360*/;k++){
+        if(CollisionDetection::isObstacleInPathStatic(collision_detection.getLaserData().Data[k].scanDistance/1000.0,collision_detection.getLaserData().Data[k].scanAngle,zoneAngle,zoneDistance)){
+            std::cout << "Obstacle in the zone" << std::endl;
+            return true;
+        }
+    }
+    return false;
+}
+
 bool MainWindow::isThereObstacleInZone(double zoneAngle, double zoneDistance) {
     for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++){
         if(collision_detection.isObstacleInPath(copyOfLaserData.Data[k].scanDistance/1000.0,copyOfLaserData.Data[k].scanAngle,zoneAngle,zoneDistance)){
@@ -596,6 +616,24 @@ void MainWindow::findEdgeRight(){
     }
 }
 
+bool MainWindow::checkLeftEdgePointObstacle(){
+    double distance = sqrt(pow(collision_detection.getObstacle()->getLeftEdge()->getPoint()->getX()/1000.0- robotX, 2) + pow(collision_detection.getObstacle()->getLeftEdge()->getPoint()->getY()/1000.0 - robotY, 2));
+
+
+    double angle = atan2(collision_detection.getObstacle()->getLeftEdge()->getPoint()->getY()/1000.0 - robotY, collision_detection.getObstacle()->getLeftEdge()->getPoint()->getX()/1000.0 - robotX) - robotFi*PI/180;
+
+    if (angle > PI) {
+        angle -= 2 * PI;
+    } else if (angle <= -PI) {
+        angle += 2 * PI;
+    }
+    std::cout << "angle: " << angle/PI*180 << " distance: " << distance << std::endl;
+    return isThereObstacleInZoneStatic(angle/PI*180,distance);
+}
+
+bool MainWindow::checkRightEdgePointObstacle(){
+    return true;
+}
 
 void MainWindow::on_pushButton_11_clicked()
 {
