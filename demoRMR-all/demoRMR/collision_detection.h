@@ -1,7 +1,9 @@
 #ifndef COLLISION_DETECTION_H
 #define COLLISION_DETECTION_H
+#define CRITICAL_DISTANCE 0.2 //[m]
 #include <math.h>
 #include <rplidar.h>
+#include "point.h"
 
 
 class Edge{
@@ -9,6 +11,7 @@ private:
     double distance;
     double angle;
     bool found_edge;
+    Point point;
 public:
     void setDistance(double distance) {this->distance = distance;}
     void setAngle(double angle) {this->angle = angle;}
@@ -16,6 +19,8 @@ public:
     double getAngle()  {return angle;}
     bool isFoundEdge()  {return found_edge;}
     void setFoundEdge(bool found_edge) {this->found_edge = found_edge;}
+    Point* getPoint()  {return &point;}
+    void setPoint(Point point) {this->point = point;}
 };
 
 class Obstacle{
@@ -38,6 +43,9 @@ public:
     Edge* getRightEdge()  {return &right_edge;}
     bool isFoundObstacle()  {return found_obstacle;}
     void setFoundObstacle(bool found_obstacle) {this->found_obstacle = found_obstacle;}
+    void calculateLeftEdgePoint(double robotX, double robotY);
+    void calculateRightEdgePoint(double robotX, double robotY);
+
     //TODO: scalovat podla initial vzdialenosti objektu (alebo podla vzdialenosti predosleho bodu ci co)?
     //TODO: doladit velkost distanceThresholdu.....
     constexpr static const double distanceThreshold = 0.4;
@@ -46,6 +54,7 @@ public:
 class CollisionDetection {
 public:
     bool isObstacleInPath(double scanDistance, double scanAngle, double zoneAngle, double zoneDistance);
+    static bool isObstacleInPathStatic(double scanDistance, double scanAngle, double zoneAngle, double zoneDistance);
     Obstacle *getObstacle()  {return &obstacle;}
     static double normalizeLidarAngle(double angle);
     void setLaserData(LaserMeasurement laser_data) {this->laser_data = laser_data;}

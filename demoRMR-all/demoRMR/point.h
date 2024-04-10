@@ -3,7 +3,7 @@
 
 class Point {
 public:
-    Point(); // Default constructor
+    Point(){}; // Default constructor
     Point(double x, double y, double theta){this->x = x; this->y = y;this->theta = theta;}; // Parameterized constructor
 
     void setPoint(double x, double y, double theta){this->x = x; this->y = y; this->theta = theta;}; // Setter for both x and y coordinates
