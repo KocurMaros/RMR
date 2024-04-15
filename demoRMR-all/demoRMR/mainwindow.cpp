@@ -140,7 +140,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     if(first_run){
         start_left = robotdata.EncoderLeft;
         start_right = robotdata.EncoderRight;
-        start_gyro = robotdata.GyroAngle;
+        start_gyro = 1.0/100.0*robotdata.GyroAngle;
         first_run = false;
         prev_left = start_left;
         prev_right = start_right;
@@ -171,21 +171,15 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     {
         delta_wheel_right = calculateEncoderDelta(prev_right, robotdata.EncoderRight); //TODO: vyhodit funkciu kvoli speed a dat kod napriamo sem? 
         delta_wheel_left = calculateEncoderDelta(prev_left, robotdata.EncoderLeft);
-        robotFi = robotFi + (delta_wheel_right - delta_wheel_left) / WHEELBASE/PI*180.0;
+        robotFi = 1.0*robotdata.GyroAngle/100.0 - start_gyro;
         if (robotFi >= 180){
             robotFi = robotFi - 360;
         }
         else if (robotFi < -180) {
             robotFi = robotFi + 360;
         }
-        if (delta_wheel_left == delta_wheel_right) {
-            robotX = robotX + (delta_wheel_left + delta_wheel_right)/2*cos(robotFi*PI/180.0);
-            robotY = robotY + (delta_wheel_left + delta_wheel_right)/2*sin(robotFi*PI/180.0);
-        }
-        else {
-            robotX = robotX + (delta_wheel_right+delta_wheel_left)/(delta_wheel_right-delta_wheel_left)*WHEELBASE/2*(sin(robotFi*PI/180.0)-sin(prev_fi*PI/180.0));
-            robotY = robotY - (delta_wheel_right+delta_wheel_left)/(delta_wheel_right-delta_wheel_left)*WHEELBASE/2*(cos(robotFi*PI/180.0)-cos(prev_fi*PI/180.0));
-        }
+        robotX = robotX + (delta_wheel_left + delta_wheel_right)/2*cos(robotFi*PI/180.0);
+        robotY = robotY + (delta_wheel_left + delta_wheel_right)/2*sin(robotFi*PI/180.0);
 
 
 
@@ -210,7 +204,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         // actual.x = 1000*robotX;
         // actual.y = 1000*robotY;
         // actual.theta = robotFi*PI/180.0;
-        
+
         actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh) {
             

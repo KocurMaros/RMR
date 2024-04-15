@@ -4,8 +4,11 @@
 // #include "mainwindow.h"
 #include <iomanip>
 #include <fstream>
+#include <string>
+#include <sstream>
 
 #include <rplidar.h>
+#include <qmath.h>
 #include <math.h>
 #include "hash_map.h"
 #include "point.h"
