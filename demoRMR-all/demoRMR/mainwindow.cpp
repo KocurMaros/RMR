@@ -275,9 +275,9 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
             //check if the path is right
             //TODO: add flag if the object has already been found
+
             if (!collision_detection.getObstacle()->isFoundObstacle()){
                 std::cout<< "Obstacle: " << collision_detection.getObstacle()->isFoundObstacle() << std::endl;
-
                 if(isThereObstacleInZone(controller->error_angle/PI*180,controller->error_distance/1000.0)){
 
                     std::cout<< "Obstacle has been found!" << std::endl;
@@ -285,22 +285,57 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     if(collision_detection.getObstacle()->getLeftEdge()->isFoundEdge()){
                         std::cout << "Obstacle left edge has been found!" << std::endl;
                         collision_detection.getObstacle()->calculateLeftEdgePoint(robotX,robotY);
-                        if (!checkLeftEdgePointObstacle())
+                        if (!checkLeftEdgePointObstacle()){
                             std::cout << "there is no obstacle brother" << std::endl;
-                        // addPointAtStart(*collision_detection.getObstacle()->getLeftEdge()->getPoint());
-                        // collision_detection.getObstacle()->setFoundObstacle(false);
+                            collision_detection.getObstacle()->getLeftEdge()->setPointFree(true);
+                            collision_detection.getObstacle()->getLeftEdge()->setDistanceToGoal(calculateDistanceToGoal(actual_point,&goal_point,collision_detection.getObstacle()->getLeftEdge()->getPoint()));
+                        }
+                        else{
+                            collision_detection.getObstacle()->getLeftEdge()->setPointFree(false);
+                        }
                     }
 
                     findEdgeRight();
                     if(collision_detection.getObstacle()->getRightEdge()->isFoundEdge()){
                         std::cout << "Obstacle right edge has been found!" << std::endl;
                         collision_detection.getObstacle()->calculateRightEdgePoint(robotX,robotY);
-                        if (!checkRightEdgePointObstacle())
+                        if (!checkRightEdgePointObstacle()){
                             std::cout << "there is no obstacle brother2" << std::endl;
-                        // addPointAtStart(*collision_detection.getObstacle()->getRightEdge()->getPoint());
-                        // collision_detection.getObstacle()->setFoundObstacle(false);
+                            collision_detection.getObstacle()->getRightEdge()->setPointFree(true);
+                            collision_detection.getObstacle()->getRightEdge()->setDistanceToGoal(calculateDistanceToGoal(actual_point,&goal_point,collision_detection.getObstacle()->getRightEdge()->getPoint()));
+                        }
+                        else{
+                            collision_detection.getObstacle()->getRightEdge()->setPointFree(false);
+                        }
                     }
 
+                    if(collision_detection.getObstacle()->getRightEdge()->isPointFree() && collision_detection.getObstacle()->getLeftEdge()->isPointFree()){
+                        if(collision_detection.getObstacle()->getRightEdge()->getDistanceToGoal() < collision_detection.getObstacle()->getLeftEdge()->getDistanceToGoal()){
+                            //set right point
+                            addPointAtStart(*collision_detection.getObstacle()->getRightEdge()->getPoint());
+                        }
+                        else {
+                            //set left point
+                            addPointAtStart(*collision_detection.getObstacle()->getLeftEdge()->getPoint());
+                        }
+                        collision_detection.getObstacle()->setFoundObstacle(false);
+                    }
+                    else if(collision_detection.getObstacle()->getLeftEdge()->isPointFree()){
+                        addPointAtStart(*collision_detection.getObstacle()->getLeftEdge()->getPoint());
+                        collision_detection.getObstacle()->setFoundObstacle(false);
+                    }
+                    else if(collision_detection.getObstacle()->getRightEdge()->isPointFree()){
+                        addPointAtStart(*collision_detection.getObstacle()->getRightEdge()->getPoint());
+                        collision_detection.getObstacle()->setFoundObstacle(false);
+                    }
+                    else {
+                        //follow wall TODO:
+                    }
+
+
+                    goal_point.setPoint(desired_point->getX(),desired_point->getY(),desired_point->getTheta());
+                    current_distance_to_goal = calculateDistanceToGoal(actual_point,desired_point);
+                    shortest_distance_to_goal = current_distance_to_goal;
 
                     //zapamatat si vzdialenost od prekazky?
                     //ak sa najde iba jeden edge - > nastavit ciel na edge
@@ -547,6 +582,8 @@ bool MainWindow::isThereObstacleInZone(double zoneAngle, double zoneDistance) {
 }
 
 void MainWindow::findEdgeLeft(){
+    collision_detection.getObstacle()->getLeftEdge()->setPointFree(false);
+
     double angle_difference = 0;
     double prev_distance = collision_detection.getObstacle()->getDistance();
     double prev_angle = collision_detection.getObstacle()->getAngle();
@@ -587,6 +624,8 @@ void MainWindow::findEdgeLeft(){
 }
 
 void MainWindow::findEdgeRight(){
+    collision_detection.getObstacle()->getRightEdge()->setPointFree(false);
+
     double angle_difference = 0;
     double prev_distance = collision_detection.getObstacle()->getDistance();
     double prev_angle = collision_detection.getObstacle()->getAngle();
@@ -651,6 +690,17 @@ bool MainWindow::checkRightEdgePointObstacle(){
     right_point_angle = angle/PI*180;
     std::cout << "angle: " << angle/PI*180 << " distance: " << distance << std::endl;
     return isThereObstacleInZoneStatic(angle/PI*180,distance);}
+
+double MainWindow::calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, Point *goalPoint, Point *midPoint){
+    double first_distance = sqrt(pow(currentPoint->getX()-midPoint->getX(), 2) + pow(currentPoint->getY()-midPoint->getY(), 2));
+    double second_distance = sqrt(pow(midPoint->getX()-goalPoint->getX(), 2) + pow(midPoint->getY()-goalPoint->getY(), 2));
+    return first_distance+second_distance;
+}
+
+double MainWindow::calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, std::shared_ptr<Point> goalPoint){
+    return sqrt(pow(currentPoint->getX()-goalPoint->getX(), 2) + pow(currentPoint->getY()-goalPoint->getY(), 2));
+}
+
 
 void MainWindow::on_pushButton_11_clicked()
 {

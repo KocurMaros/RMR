@@ -111,8 +111,11 @@ private:
     std::shared_ptr<Point> actual_point;
     std::shared_ptr<Point> set_point;
     std::shared_ptr<Point> desired_point;
+    Point goal_point;
     CollisionDetection collision_detection;
-    
+    double calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, Point *goalPoint, Point *midPoint);
+    double calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, std::shared_ptr<Point> goalPoint);
+
 
     std::vector<Point> points_vector;
     //vektor bude mat v sebe body, ktore, ked ich budes pridavat manualne tak sa pridaju appendom nakoniec
@@ -157,6 +160,7 @@ private:
     bool trajectory_clear;
     double shortest_distance_to_goal;
     double current_distance_to_goal;
+
     double left_point_distance;
     double left_point_angle;
     double right_point_distance;

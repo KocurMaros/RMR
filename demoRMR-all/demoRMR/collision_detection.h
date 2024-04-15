@@ -12,6 +12,8 @@ private:
     double angle;
     bool found_edge;
     Point point;
+    bool point_free;
+    double distance_to_goal;
 public:
     void setDistance(double distance) {this->distance = distance;}
     void setAngle(double angle) {this->angle = angle;}
@@ -21,6 +23,10 @@ public:
     void setFoundEdge(bool found_edge) {this->found_edge = found_edge;}
     Point* getPoint()  {return &point;}
     void setPoint(Point point) {this->point = point;}
+    bool isPointFree()  {return point_free;}
+    void setPointFree(bool point_free) {this->point_free = point_free;}
+    double getDistanceToGoal()  {return distance_to_goal;}
+    void setDistanceToGoal(double distance_to_goal) {this->distance_to_goal = distance_to_goal;}
 };
 
 class Obstacle{
