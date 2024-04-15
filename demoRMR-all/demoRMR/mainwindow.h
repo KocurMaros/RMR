@@ -112,9 +112,6 @@ private:
     std::shared_ptr<Point> set_point;
     std::shared_ptr<Point> desired_point;
     CollisionDetection collision_detection;
-
-    double distance_forDebug = 0;
-    double angle_forDebug = 0;
     
 
     std::vector<Point> points_vector;
@@ -160,6 +157,10 @@ private:
     bool trajectory_clear;
     double shortest_distance_to_goal;
     double current_distance_to_goal;
+    double left_point_distance;
+    double left_point_angle;
+    double right_point_distance;
+    double right_point_angle;
 
 public slots:
      void setUiValues(double robotX,double robotY,double robotFi);

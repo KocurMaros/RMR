@@ -60,6 +60,10 @@ MainWindow::MainWindow(QWidget *parent) :
     controller->clearIntegral();
     shortest_distance_to_goal = 0;
     current_distance_to_goal = 0;
+    left_point_distance = 0;
+    right_point_distance = 0;
+    left_point_angle = 0;
+    right_point_angle = 0;
     collision_detection.getObstacle()->setFoundObstacle(false);
 
 }
@@ -127,8 +131,8 @@ void MainWindow::paintEvent(QPaintEvent *event)
 
                 pero.setColor(Qt::red);
                 painter.setPen(pero);
-                xp = rect.width()-(rect.width()/2+distance_forDebug*100*sin(angle_forDebug*3.14159/180.0))+rect.topLeft().x();
-                yp = rect.height()-(rect.height()/2+distance_forDebug*100*cos(angle_forDebug*3.14159/180.0))+rect.topLeft().y();
+                xp = rect.width()-(rect.width()/2+left_point_distance*100*sin(left_point_angle*3.14159/180.0))+rect.topLeft().x();
+                yp = rect.height()-(rect.height()/2+left_point_distance*100*cos(left_point_angle*3.14159/180.0))+rect.topLeft().y();
                 if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
                     painter.drawEllipse(QPoint(xp, yp),2,2);
             }
@@ -142,12 +146,12 @@ void MainWindow::paintEvent(QPaintEvent *event)
                 if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
                     painter.drawEllipse(QPoint(xp, yp),2,2);
 
-                // pero.setColor(Qt::red);
-                // painter.setPen(pero);
-                // xp = rect.width()-(rect.width()/2+collision_detection.getObstacle()->getRightEdge()->getPoint()->getX()/10)+rect.topLeft().x();
-                // yp = rect.height()-(rect.height()/2+collision_detection.getObstacle()->getRightEdge()->getPoint()->getY()/10)+rect.topLeft().y();
-                // if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
-                //     painter.drawEllipse(QPoint(xp, yp),2,2);
+                pero.setColor(Qt::red);
+                painter.setPen(pero);
+                xp = rect.width()-(rect.width()/2+right_point_distance*100*sin(right_point_angle*3.14159/180.0))+rect.topLeft().x();
+                yp = rect.height()-(rect.height()/2+right_point_distance*100*cos(right_point_angle*3.14159/180.0))+rect.topLeft().y();
+                if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+                    painter.drawEllipse(QPoint(xp, yp),2,2);
             }
         }
     }
@@ -291,6 +295,10 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     if(collision_detection.getObstacle()->getRightEdge()->isFoundEdge()){
                         std::cout << "Obstacle right edge has been found!" << std::endl;
                         collision_detection.getObstacle()->calculateRightEdgePoint(robotX,robotY);
+                        if (!checkRightEdgePointObstacle())
+                            std::cout << "there is no obstacle brother2" << std::endl;
+                        // addPointAtStart(*collision_detection.getObstacle()->getRightEdge()->getPoint());
+                        // collision_detection.getObstacle()->setFoundObstacle(false);
                     }
 
 
@@ -598,9 +606,6 @@ void MainWindow::findEdgeRight(){
         double lidar_angle = CollisionDetection::normalizeLidarAngle(collision_detection.getLaserData().Data[lidar_index].scanAngle);
         double lidar_distance = collision_detection.getLaserData().Data[lidar_index].scanDistance/1000.0;
 
-        // std::cout << "lidar_angle: " << lidar_angle << " lidar_distance: " << lidar_distance << std::endl;
-        // std::cout << "prev_angle: " << prev_angle << " prev_distance: " << prev_distance << std::endl;
-
         if((lidar_distance - prev_distance > Obstacle::distanceThreshold) || lidar_distance == 0.0){
 
             //TODO: vratit roh predoslej vzdialenosti a predosleho uhla asi zejo
@@ -621,22 +626,31 @@ void MainWindow::findEdgeRight(){
 bool MainWindow::checkLeftEdgePointObstacle(){
     double distance = sqrt(pow(collision_detection.getObstacle()->getLeftEdge()->getPoint()->getX()/1000.0- robotX, 2) + pow(collision_detection.getObstacle()->getLeftEdge()->getPoint()->getY()/1000.0 - robotY, 2));
 
-
     double angle = atan2(collision_detection.getObstacle()->getLeftEdge()->getPoint()->getY()/1000.0 - robotY, collision_detection.getObstacle()->getLeftEdge()->getPoint()->getX()/1000.0 - robotX) - robotFi*PI/180;
     if (angle > PI) {
         angle -= 2 * PI;
     } else if (angle <= -PI) {
         angle += 2 * PI;
     }
-    distance_forDebug = distance;
-    angle_forDebug = angle/PI*180;
+    left_point_distance = distance;
+    left_point_angle = angle/PI*180;
     std::cout << "angle: " << angle/PI*180 << " distance: " << distance << std::endl;
     return isThereObstacleInZoneStatic(angle/PI*180,distance);
 }
 
 bool MainWindow::checkRightEdgePointObstacle(){
-    return true;
-}
+    double distance = sqrt(pow(collision_detection.getObstacle()->getRightEdge()->getPoint()->getX()/1000.0- robotX, 2) + pow(collision_detection.getObstacle()->getRightEdge()->getPoint()->getY()/1000.0 - robotY, 2));
+
+    double angle = atan2(collision_detection.getObstacle()->getRightEdge()->getPoint()->getY()/1000.0 - robotY, collision_detection.getObstacle()->getRightEdge()->getPoint()->getX()/1000.0 - robotX) - robotFi*PI/180;
+    if (angle > PI) {
+        angle -= 2 * PI;
+    } else if (angle <= -PI) {
+        angle += 2 * PI;
+    }
+    right_point_distance = distance;
+    right_point_angle = angle/PI*180;
+    std::cout << "angle: " << angle/PI*180 << " distance: " << distance << std::endl;
+    return isThereObstacleInZoneStatic(angle/PI*180,distance);}
 
 void MainWindow::on_pushButton_11_clicked()
 {

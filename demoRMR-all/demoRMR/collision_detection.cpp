@@ -102,8 +102,8 @@ void Obstacle::calculateLeftEdgePoint(double robotX, double robotY) {
 }
 
 void Obstacle::calculateRightEdgePoint(double robotX, double robotY) {
-    double c = sqrt(pow(getRightEdge()->getDistance(),2) + pow(CRITICAL_DISTANCE+0.01,2));
-    double alfa = getRightEdge()->getAngle() * PI / 180 - asin(CRITICAL_DISTANCE+0.01/c);
+    double c = sqrt(pow(getRightEdge()->getDistance(),2) + pow(CRITICAL_DISTANCE*3/2,2));
+    double alfa = getRightEdge()->getAngle() * PI / 180 - asin(CRITICAL_DISTANCE*3/2/c);
 
     if (alfa >= 180) alfa -= 360;
     else if (alfa < -180) alfa += 360;
