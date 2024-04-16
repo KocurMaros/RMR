@@ -46,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent) :
     set_point = make_shared<Point>(0,0,0);
     desired_point = make_shared<Point>(0,0,0);
     maps = make_shared<Mapping>();
+    // path = make_shared<Pathfinding>();
     robotX = 0;
     robotY = 0;
     robotFi = 0;
@@ -80,29 +81,38 @@ void MainWindow::paintEvent(QPaintEvent *event)
     rect= ui->frame->geometry();//ziskate porametre stvorca,do ktoreho chcete kreslit
     rect.translate(0,15);
     painter.drawRect(rect);
-
-    if(useCamera1==true && actIndex>-1)/// ak zobrazujem data z kamery a aspon niektory frame vo vectore je naplneny
-    {
-        // std::cout<<actIndex<<std::endl;
-        QImage image = QImage((uchar*)frame[actIndex].data, frame[actIndex].cols, frame[actIndex].rows, frame[actIndex].step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
-        painter.drawImage(rect,image.rgbSwapped());
-    }
-    else
-    {
-        if(updateLaserPicture==1) ///ak mam nove data z lidaru
+    if(!mapping_start){
+        if(useCamera1==true && actIndex>-1)/// ak zobrazujem data z kamery a aspon niektory frame vo vectore je naplneny
         {
-            updateLaserPicture=0;
-
-            painter.setPen(pero);
-            //teraz tu kreslime random udaje... vykreslite to co treba... t.j. data z lidaru
-         //   std::cout<<copyOfLaserData.numberOfScans<<std::endl;
-            for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
+            // std::cout<<actIndex<<std::endl;
+            QImage image = QImage((uchar*)frame[actIndex].data, frame[actIndex].cols, frame[actIndex].rows, frame[actIndex].step, QImage::Format_RGB888  );//kopirovanie cvmat do qimage
+            painter.drawImage(rect,image.rgbSwapped());
+        }
+        else
+        {
+            if(updateLaserPicture==1) ///ak mam nove data z lidaru
             {
-                int dist=copyOfLaserData.Data[k].scanDistance/20; ///vzdialenost nahodne predelena 20 aby to nejako vyzeralo v okne.. zmen podla uvazenia
-                int xp=rect.width()-(rect.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().x(); //prepocet do obrazovky
-                int yp=rect.height()-(rect.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().y();//prepocet do obrazovky
-                if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
-                    painter.drawEllipse(QPoint(xp, yp),2,2);
+                updateLaserPicture=0;
+
+                painter.setPen(pero);
+                //teraz tu kreslime random udaje... vykreslite to co treba... t.j. data z lidaru
+            //   std::cout<<copyOfLaserData.numberOfScans<<std::endl;
+                for(int k=0;k<copyOfLaserData.numberOfScans/*360*/;k++)
+                {
+                    int dist=copyOfLaserData.Data[k].scanDistance/20; ///vzdialenost nahodne predelena 20 aby to nejako vyzeralo v okne.. zmen podla uvazenia
+                    int xp=rect.width()-(rect.width()/2+dist*2*sin((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().x(); //prepocet do obrazovky
+                    int yp=rect.height()-(rect.height()/2+dist*2*cos((360.0-copyOfLaserData.Data[k].scanAngle)*3.14159/180.0))+rect.topLeft().y();//prepocet do obrazovky
+                    if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
+                        painter.drawEllipse(QPoint(xp, yp),2,2);
+                }
+                int xrobot = rect.width() / 2;
+                int yrobot = rect.height() / 2;
+                int xpolomer = 20;
+                int ypolomer = 20;
+
+                painter.drawEllipse(QPoint(rect.x() + xrobot, rect.y() + yrobot), xpolomer, ypolomer);
+                painter.drawLine(rect.x() + xrobot, rect.y() + yrobot, rect.x() + xrobot + xpolomer * cos((360 - 90) * 3.14159 / 180),
+                                rect.y() + ((yrobot + ypolomer * sin((360 - 90) * 3.14159 / 180))));
             }
         }
     }
@@ -204,10 +214,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         // actual.x = 1000*robotX;
         // actual.y = 1000*robotY;
         // actual.theta = robotFi*PI/180.0;
-
         actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
-        if (bruh) {
-            
+        if (bruh || mapping_start) {
             double rot_speed;
             int trans_speed, radius;
             if (!points_vector.empty()){
@@ -224,7 +232,8 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
             if(rot_speed < 0.01 && error_distance > 500 ){
                 // cout << "CAll "<< rot_speed << " " << trans_speed << endl;
-                maps->Gmapping(copyOfLaserData, robotX, robotY, robotFi);
+                if(mapping_start)
+                    maps->Gmapping(copyOfLaserData, robotX, robotY, robotFi);
                 prev_x_map = actual_point->getX();
                 prev_y_map = actual_point->getY();
             }
@@ -282,26 +291,23 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         /// vtedy ale odporucam pouzit mutex, aby sa vam nestalo ze budete pocas vypisovania prepisovat niekde inde
 
     }
-    if(mapping == 6){
-        mapping++;
+    // if(mapping == 10 && mapping_start){
+
+    if(mapping == 9 && mapping_start){
+        cout << "Mapping finished" << endl;
+        mapping_start = false;
         maps->save_map();
-    }
-    if(read_map){
-        read_map = false;
-        maps->load_map();
+        cout << "Mapping saved" << endl;
         maps->print_map();
-        
     }
     datacounter++;
-
-
     return 0;
 
 }
 
 ///toto je calback na data z lidaru, ktory ste podhodili robotu vo funkcii on_pushButton_9_clicked
 /// vola sa ked dojdu nove data z lidaru
-int MainWindow::processThisLidar(LaserMeasurement laserData)
+ int MainWindow::processThisLidar(LaserMeasurement laserData)
 {
 
 
@@ -360,7 +366,45 @@ void MainWindow::on_pushButton_9_clicked() //start button
             if(/*js==0 &&*/ axis==0){rotationspeed=-value*(3.14159/2.0);}}
     );
 }
+void MainWindow::on_pushButton_mapping_clicked(){
+    std::cout << "Mapping started" << std::endl;
+    points_vector.push_back(Point(0*1000,0*1000,0));
+    points_vector.push_back(Point(0*1000,3.8*1000,0));
+    points_vector.push_back(Point(4*1000,3.8*1000,0));
+    points_vector.push_back(Point(3*1000,3.8*1000,0));
+    points_vector.push_back(Point(3*1000,1*1000,0));
+    points_vector.push_back(Point(5*1000,1*1000,0));
+    points_vector.push_back(Point(3*1000,0.5*1000,0));
+    points_vector.push_back(Point(3*1000,-0.8*1000,0));
+    points_vector.push_back(Point(2*1000,-1.1*1000,0));
+    mapping = 0;
+    mapping_start = true;
+}
+void MainWindow::on_pushButton_loadMap_clicked(){
 
+    maps->load_map();
+
+    
+    bool xOK = true,yOK = true;
+    double x = ui->lineEdit_5->text().toDouble(&xOK);
+    double y = ui->lineEdit_6->text().toDouble(&yOK);
+    if (xOK && yOK){
+        cout << "Loading map" << endl;
+        maps->load_map();
+        cout << "Map loaded" << endl;
+        Point point(x*100,y*100,0*PI/180);
+        std::vector<Point> trajectory = maps->flood_fill(Point(robotX*100,robotY*100,0),point);
+        for(auto &p : trajectory){
+            points_vector.push_back(p);
+            cout << "X: " << p.getX() << " Y: " << p.getY() << endl;
+        }
+            // maps->print_map();
+        bruh = true;
+    }
+    else {
+        std::cout << "incorrect input!" << std::endl;
+    }
+}
 void MainWindow::on_pushButton_2_clicked() //forward
 {
     //pohyb dopredu
@@ -390,7 +434,6 @@ void MainWindow::on_pushButton_4_clicked() //stop
 {
     robot.setTranslationSpeed(0);
     bruh = false;
-    read_map = true;
 
 }
 void MainWindow::on_pushButton_7_clicked() //arc left
@@ -443,10 +486,6 @@ void MainWindow::on_pushButton_10_clicked()
     else {
         std::cout << "incorrect input!" << std::endl;
     }
-    points_vector.push_back(Point(0*1000,3.5*1000,0));
-    points_vector.push_back(Point(4*1000,4*1000,0));
-    points_vector.push_back(Point(3*1000,4*1000,0));
-    points_vector.push_back(Point(3*1000,0.5*1000,0));
-    points_vector.push_back(Point(5*1000,0.5*1000,0));
+    
 }
 
