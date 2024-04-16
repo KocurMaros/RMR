@@ -113,3 +113,10 @@ void Obstacle::calculateRightEdgePoint(double robotX, double robotY) {
     getRightEdge()->getPoint()->setPoint(x*1000,y*1000,0);
 }
 
+void CollisionDetection::resetCollisionDetection(){
+    obstacle.setFoundObstacle(false);
+    obstacle.getLeftEdge()->setFoundEdge(false);
+    obstacle.getRightEdge()->setFoundEdge(false);
+    obstacle.getLeftEdge()->setPointFree(false);
+    obstacle.getRightEdge()->setPointFree(false);
+}

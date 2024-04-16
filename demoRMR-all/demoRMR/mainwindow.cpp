@@ -318,15 +318,15 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                             //set left point
                             addPointAtStart(*collision_detection.getObstacle()->getLeftEdge()->getPoint());
                         }
-                        collision_detection.getObstacle()->setFoundObstacle(false);
+                        collision_detection.resetCollisionDetection();
                     }
                     else if(collision_detection.getObstacle()->getLeftEdge()->isPointFree()){
                         addPointAtStart(*collision_detection.getObstacle()->getLeftEdge()->getPoint());
-                        collision_detection.getObstacle()->setFoundObstacle(false);
+                        collision_detection.resetCollisionDetection();
                     }
                     else if(collision_detection.getObstacle()->getRightEdge()->isPointFree()){
                         addPointAtStart(*collision_detection.getObstacle()->getRightEdge()->getPoint());
-                        collision_detection.getObstacle()->setFoundObstacle(false);
+                        collision_detection.resetCollisionDetection();
                     }
                     else {
                         //follow wall TODO:
@@ -361,7 +361,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     points_vector.erase(points_vector.begin());
                 }
                 std::cout << "clear integral" << std::endl;
-                return 0;   
+                return 0;
             }
 
             if (abs(controller->error_angle) >= PI/4 && !rot_only){

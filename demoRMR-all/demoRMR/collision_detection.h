@@ -65,6 +65,7 @@ public:
     static double normalizeLidarAngle(double angle);
     void setLaserData(LaserMeasurement laser_data) {this->laser_data = laser_data;}
     LaserMeasurement getLaserData()  {return laser_data;}
+    void resetCollisionDetection();
 
 private:
     Obstacle obstacle;
