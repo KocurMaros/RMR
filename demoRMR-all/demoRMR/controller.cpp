@@ -8,9 +8,7 @@ PIController::PIController(double kp, double ki, double kp_rot) : kp_(kp), ki_(k
 
 PIController::~PIController() {}
 
-
-void PIController::compute(Point actual_point, Point desired_point, double dt_, int *trans_speed, double *rot_speed) {
-    
+void PIController::computeErrors(Point actual_point, Point desired_point){
     double actual_x, actual_y, actual_theta;
     double desired_x, desired_y, desired_theta;
     actual_x = actual_point.getX();
@@ -28,6 +26,12 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
     } else if (error_angle <= -PI) {
         error_angle += 2 * PI;
     }
+}
+
+void PIController::compute(Point actual_point, Point desired_point, double dt_, int *trans_speed, double *rot_speed) {
+    computeErrors(actual_point,desired_point);
+
+
     integral_ = integral_ + error_distance*dt_;
 
     double omega = kp_*error_distance/* + ki_*integral_*/;

@@ -15,6 +15,7 @@ public:
      double error_distance;
      double error_angle;
 
+     void computeErrors(Point actual_point, Point desired_point);
     void compute(Point actual_point, Point desired_point, double dt_, int *trans_speed, double *rot_speed);
     // double compute(double desired_x,double desired_y, double desired_theta,
     //                double actual_x,double actual_y, double actual_theta,

@@ -1,3 +1,7 @@
 ak mozem ist na bod tak sa priradi bod z vektora, inak sa priradi bod objazdu
 
 (ak bol detegovany objekt tak sa musi priradit objazdovy bod, ked sa dosiahne objazdovy bod a vidim na ciel tak sa moze vynulovat obstacle detection) ked sa dosiahne bod a nevidim na ciel tak sa nevynuluje dlzka trajektorie, zas sa snazi nasjt bod, sleduje sa ci sa vzdialenost zvacsuje, ak ano tak wall follwing, ak ne tak chill ?
+
+WALL FOLLOWING - POVEDZME ZE NA ZACIATKU SI ULOZIM AKTUALNU VZDIALENOST OD CIELA, KED SA ZACNE VZDIALENOST ZVACSOVAT TAK ZACNI SLEDOVAT STENU (TO ASI IBA KED UZ BOLA DETEGOVANA PREKAZKA)
+
+checkne sa ci sa da ist na ciel a zaroven nejsom wall following ak sa da -> 

@@ -166,6 +166,8 @@ private:
     double right_point_distance;
     double right_point_angle;
 
+    bool wall_following;
+
 public slots:
      void setUiValues(double robotX,double robotY,double robotFi);
 signals:
