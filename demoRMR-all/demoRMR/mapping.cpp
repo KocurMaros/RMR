@@ -46,6 +46,7 @@ void Mapping::create_new_map(double obstacleX, double obstacleY, double robotThe
     map_vector.push_back(Hash_map(620.0*(k), 620.0*l, robotTheta, 10, 63)); 
 }
 void Mapping::create_map(LaserMeasurement laser_data, double robotX, double robotY, double robotTheta){
+    //prechadzat  laser data a hladat ci bod spada do hash mapy
     for(size_t u = 0; u < map_vector.size(); u++){
         double angle, distance;
         double obstacle_x, obstacle_y;
@@ -53,7 +54,7 @@ void Mapping::create_map(LaserMeasurement laser_data, double robotX, double robo
         dim = 300;
         for(size_t i = 0; i < laser_data.numberOfScans; i++)
         {
-            if(laser_data.Data[i].scanDistance == 0 || laser_data.Data[i].scanDistance > 3200){
+            if(laser_data.Data[i].scanDistance == 0 || laser_data.Data[i].scanDistance > 3200 || laser_data.Data[i].scanDistance < 600){
                 continue;
             }
        
@@ -252,11 +253,11 @@ void Mapping::print_map(){
                     std::cout << map1[j][k] << "   ";
             }
         }
-        std::cout << "|  ";
-        for(size_t k = 0; k < coordinates[j].size(); k++){
-            std::cout << "[" << coordinates[j][k].getX() << "," << coordinates[j][k].getY() << "]";
-            std::cout << map.get_coordinates()[j][k].getX() << " " <<map.get_coordinates()[j][k].getY(); 
-        }
+        // std::cout << "|  ";
+        // for(size_t k = 0; k < coordinates[j].size(); k++){
+        //     std::cout << "[" << coordinates[j][k].getX() << "," << coordinates[j][k].getY() << "]";
+        //     std::cout << map.get_coordinates()[j][k].getX() << " " <<map.get_coordinates()[j][k].getY(); 
+        // }
         std::cout << "|" << std::endl;
     }
 }
@@ -312,6 +313,9 @@ std::vector<Point> Mapping::flood_fill(Point start, Point goal) {
     
     std::vector<Point> path = floodFillPathfind(ind_start_x, ind_start_y, ind_goal_x, ind_goal_y);
     // std::cout << "path size " << path.size() << std::endl;
+    for(size_t i = 0; i < path.size(); i++){
+        std::cout << path[i].getX() << " " << path[i].getY() << std::endl;
+    }
     std::vector<Point> filteredPath;
     int prev_shiftX = 0, prev_shiftY = 0;
     int shift_bruh = 100;
@@ -323,40 +327,33 @@ std::vector<Point> Mapping::flood_fill(Point start, Point goal) {
             sameY = true;
         
         if(path[i].getX() == path[i+1].getX() && path[i].getY() != path[i+1].getY() && sameY){
-            if((path[i].getY() - path[i-1].getY()) > 0){
-                filteredPath.push_back(Point(path[i].getX()-shift_bruh+prev_shiftX,path[i].getY()+prev_shiftY,0));
-                prev_shiftX = -shift_bruh;
-                prev_shiftY = 0;
+            if((path[i+1].getY() - path[i-1].getY()) > 0){
+                filteredPath.push_back(Point(path[i].getX(),path[i].getY(),0));
             }
             else{
-                filteredPath.push_back(Point(path[i].getX()+shift_bruh+prev_shiftX,path[i].getY()+prev_shiftY,0));
-                prev_shiftX = shift_bruh;
-                prev_shiftY = 0;
+                filteredPath.push_back(Point(path[i].getX(),path[i].getY(),0));
             }
             // filteredPath.push_back(path[i]);
             sameY = false;
-            continue;
+            i--;
+            // continue;
         }
         if(path[i].getY() == path[i+1].getY() && path[i].getX() != path[i+1].getX() && sameX){
             if((path[i].getX() - path[i-1].getX()) > 0){
-                filteredPath.push_back(Point(path[i].getX()+prev_shiftX,path[i].getY()-shift_bruh+prev_shiftY,0));
-                prev_shiftX = 0;
-                prev_shiftY = -shift_bruh;
+                filteredPath.push_back(Point(path[i].getX(),path[i].getY(),0));
             } 
             else{
-                filteredPath.push_back(Point(path[i].getX()+prev_shiftX,path[i].getY()+shift_bruh+prev_shiftY,0));
-                prev_shiftX = 0;
-                prev_shiftY = shift_bruh;
+                filteredPath.push_back(Point(path[i].getX(),path[i].getY(),0));
             }
             // filteredPath.push_back(path[i]);
             sameX = false;
-        
+            i--;
             continue;
         }
 
     }
     filteredPath.push_back(Point(goal.getX()*10,goal.getY()*10,0));
-
+    print_map();
     return filteredPath;
     // std::cout << "filteredPath size " << filteredPath.size() << std::endl;
 
@@ -419,6 +416,7 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
                 }
                 // std::cout << grid[x_path][y_path] << " " << grid[x_path-1][y_path] << " " << grid[x_path+1][y_path] << " " << grid[x_path][y_path-1] << " " << grid[x_path][y_path+1] << std::endl;
                 // std::cout << "x_path " << x_path << " y_path " << y_path << std::endl;
+                // std::cout << grid[x_path][y_path] << std::endl;
                 act_index = grid[x_path][y_path];
             }
             return path;
