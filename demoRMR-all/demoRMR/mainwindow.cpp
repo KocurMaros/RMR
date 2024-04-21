@@ -28,8 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-    ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
-    // ipaddress="127.0.0.1";
+    // ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    ipaddress="127.0.0.1";
   //  cap.open("http://192.168.1.11:8000/stream.mjpg");
     ui->setupUi(this);
     datacounter=0;
@@ -208,12 +208,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
         prev_left=robotdata.EncoderLeft;
         prev_fi = robotFi;
 
-        // prev_x = robotX;
-        // prev_y = robotY;
-        // prev_gyro = robotFi;
-        // actual.x = 1000*robotX;
-        // actual.y = 1000*robotY;
-        // actual.theta = robotFi*PI/180.0;
         actual_point->setPoint(robotX*1000, robotY*1000, robotFi*PI/180.0);
         if (bruh || mapping_start) {
             double rot_speed;
@@ -221,22 +215,14 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             if (!points_vector.empty()){
                 desired_point->setPoint(points_vector[0].getX(),points_vector[0].getY(),0);
             }
-            else {
+            else{
                 bruh = false;
                 return 0; //break maybe?
             }
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
-    
+            m_rot_speed = rot_speed;
 
-            double error_distance = sqrt(pow(actual_point->getX() - prev_x_map, 2) + pow(actual_point->getY() - prev_y_map, 2));
-
-            if(rot_speed < 0.01 && error_distance > 500 ){
-                // cout << "CAll "<< rot_speed << " " << trans_speed << endl;
-                if(mapping_start)
-                    maps->Gmapping(copyOfLaserData, robotX, robotY, robotFi);
-                prev_x_map = actual_point->getX();
-                prev_y_map = actual_point->getY();
-            }
+            
             if(abs(controller->error_distance) < WITHIN_TOLERANCE){
                 mapping++;
                 controller->clearIntegral();
@@ -246,7 +232,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     //toto asi nemusi byt v ife - just to be sure
                     points_vector.erase(points_vector.begin());
                 }
-                // std::cout << "clear integral" << std::endl;
                 return 0;   
             }
 
@@ -254,30 +239,16 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 rot_only = true;
                 controller->ramp.clear_time_hard();
                 controller->clearIntegral();
-                // std::cout << "ONLY ROT: " << controller->error_angle << std::endl;
-                // std::cout << "Actual Theta: " << actual_point->getTheta() << std::endl;
-                // std::cout << "Desired Theta: " << atan2(desired_point->getY()-actual_point->getY(),desired_point->getX()-actual_point->getX()) << std::endl;
             }
             if (rot_only){
-                // std::cout<< "ROTATION" << std::endl;
                 robot.setRotationSpeed(rot_speed);
-            // }
-            // else if(abs(rot_speed) < PI/180){
-            //     robot.setTranslationSpeed(trans_speed);
-                // std::cout<< "TRANSLATION" << std::endl;
-                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
             }else{
-                // if(rot_speed == 0){
-                //     rot_speed = 0.0001;
-                // }
                 radius = trans_speed/rot_speed;
                 if(radius > 32767)
                     radius = 32767;
                 else if(radius < -32767)
                     radius = -32767;
                 robot.setArcSpeed(trans_speed,radius);
-                // std::cout<< "ARC" << std::endl;
-                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
             }
             if (rot_only && abs(controller->error_angle)<=4*PI/180){
                 rot_only = false;
@@ -293,12 +264,14 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     }
     // if(mapping == 10 && mapping_start){
 
-    if(mapping == 9 && mapping_start){
+    // if(mapping == 9 && mapping_start){
+    if(save_map){
         cout << "Mapping finished" << endl;
         mapping_start = false;
         maps->save_map();
         cout << "Mapping saved" << endl;
         maps->print_map();
+        save_map = false;
     }
     datacounter++;
     return 0;
@@ -309,12 +282,20 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 /// vola sa ked dojdu nove data z lidaru
  int MainWindow::processThisLidar(LaserMeasurement laserData)
 {
-
-
     memcpy( &copyOfLaserData,&laserData,sizeof(LaserMeasurement));
     //tu mozete robit s datami z lidaru.. napriklad najst prekazky, zapisat do mapy. naplanovat ako sa prekazke vyhnut.
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
     updateLaserPicture=1;
+    double error_distance = sqrt(pow(actual_point->getX() - prev_x_map, 2) + pow(actual_point->getY() - prev_y_map, 2));
+    if(mapping_start){
+        if(m_rot_speed < 0.01 && error_distance > 50 ){
+            cout << "Rot speed " << m_rot_speed << " dis " << error_distance << endl;
+            maps->Gmapping(copyOfLaserData, robotX, robotY, robotFi);
+            cout << "Updating map from lidar " << endl;
+            prev_x_map = actual_point->getX();
+            prev_y_map = actual_point->getY();
+        }
+    }
     update();//tento prikaz prinuti prekreslit obrazovku.. zavola sa paintEvent funkcia
 
 
@@ -367,22 +348,31 @@ void MainWindow::on_pushButton_9_clicked() //start button
     );
 }
 void MainWindow::on_pushButton_mapping_clicked(){
-    std::cout << "Mapping started" << std::endl;
-    points_vector.push_back(Point(0*1000,0*1000,0));
-    points_vector.push_back(Point(0*1000,3.8*1000,0));
-    points_vector.push_back(Point(4*1000,3.8*1000,0));
-    points_vector.push_back(Point(3*1000,3.8*1000,0));
-    points_vector.push_back(Point(3*1000,1*1000,0));
-    points_vector.push_back(Point(5*1000,1*1000,0));
-    points_vector.push_back(Point(3*1000,0.5*1000,0));
-    points_vector.push_back(Point(3*1000,-0.8*1000,0));
-    points_vector.push_back(Point(2*1000,-1.1*1000,0));
-    mapping = 0;
-    mapping_start = true;
+    if(!mapping_start){
+        ui->pushButton_mapping->setText("stop mapping");
+        mapping_start = true;
+        save_map = false;
+        points_vector.push_back(Point(0*1000,0*1000,0));
+        points_vector.push_back(Point(0*1000,3.8*1000,0));
+        points_vector.push_back(Point(4*1000,3.8*1000,0));
+        points_vector.push_back(Point(3*1000,3.8*1000,0));
+        points_vector.push_back(Point(3*1000,0.8*1000,0));
+        points_vector.push_back(Point(5*1000,0.8*1000,0));
+        points_vector.push_back(Point(3*1000,0.8*1000,0));
+        points_vector.push_back(Point(3*1000,-1.0*1000,0));
+        points_vector.push_back(Point(2*1000,-1.0*1000,0));
+    }else{
+        ui->pushButton_mapping->setText("start mapping");
+        mapping_start = false;
+        save_map = true;
+    }
+    // std::cout << "Mapping started" << std::endl;
+    // mapping = 0;
+    // mapping_start = true;
 }
 void MainWindow::on_pushButton_loadMap_clicked(){
 
-    maps->load_map();
+    // maps->load_map();
 
     
     bool xOK = true,yOK = true;
@@ -391,6 +381,7 @@ void MainWindow::on_pushButton_loadMap_clicked(){
     if (xOK && yOK){
         cout << "Loading map" << endl;
         maps->load_map();
+        maps->print_map();
         cout << "Map loaded" << endl;
         Point point(x*100,y*100,0*PI/180);
         std::vector<Point> trajectory = maps->flood_fill(Point(robotX*100,robotY*100,0),point);
@@ -398,7 +389,7 @@ void MainWindow::on_pushButton_loadMap_clicked(){
             points_vector.push_back(p);
             cout << "X: " << p.getX() << " Y: " << p.getY() << endl;
         }
-            // maps->print_map();
+        maps->print_map();
         bruh = true;
     }
     else {

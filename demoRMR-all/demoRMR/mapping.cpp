@@ -44,32 +44,30 @@ void Mapping::create_new_map(double obstacleX, double obstacleY, double robotThe
         l++;
     }
     map_vector.push_back(Hash_map(620.0*(k), 620.0*l, robotTheta, 10, 63)); 
+    std::cout << "Map created " << " " << 620.0*(k) << " " << 620.0*l << " " << robotTheta << std::endl;
 }
 void Mapping::create_map(LaserMeasurement laser_data, double robotX, double robotY, double robotTheta){
-    //prechadzat  laser data a hladat ci bod spada do hash mapy
-    for(size_t u = 0; u < map_vector.size(); u++){
-        double angle, distance;
-        double obstacle_x, obstacle_y;
-        uint16_t dim = map_vector[u].get_map_dimension();
-        dim = 300;
-        for(size_t i = 0; i < laser_data.numberOfScans; i++)
-        {
-            if(laser_data.Data[i].scanDistance == 0 || laser_data.Data[i].scanDistance > 3200 || laser_data.Data[i].scanDistance < 600){
-                continue;
+    double angle, distance;
+    double obstacle_x, obstacle_y;
+    for(size_t i = 0; i < laser_data.numberOfScans; i++){
+        if(laser_data.Data[i].scanDistance <= 650 || laser_data.Data[i].scanDistance > 3000)
+            continue;
+        angle = shift_theta(shift_theta_robot(robotTheta) + laser_data.Data[i].scanAngle);
+        distance = laser_data.Data[i].scanDistance/10.0;
+        obstacle_x = robotX +  distance * cos(deg2rad(angle));
+        obstacle_y = robotY +  distance * sin(deg2rad(angle));
+        for(size_t u = 0; u < map_vector.size(); u++){
+            if(obstacle_x >= map_vector[u].get_minX() && obstacle_x <= map_vector[u].get_maxX() && obstacle_y >= map_vector[u].get_minY() && obstacle_y <= map_vector[u].get_maxY()){
+                Point point = Point(obstacle_x, obstacle_y, 0);
+                map_vector[u].update_map(point, true);
+                break;
+                // u = map_vector.size();
+            }else if(u == map_vector.size()-1){
+                if(obstacle_x > 600 || obstacle_y > 600 || obstacle_x == 310 || obstacle_y == 310)
+                    continue;
+                std::cout << "Map creating " << " " << obstacle_x << " " << obstacle_y << " " << robotTheta << std::endl;
+                create_new_map(obstacle_x, obstacle_y,robotTheta);
             }
-       
-            angle = shift_theta(shift_theta_robot(robotTheta) + laser_data.Data[i].scanAngle);
-            distance = laser_data.Data[i].scanDistance/10.0;
-            obstacle_x = robotX +  distance * cos(deg2rad(angle));
-            obstacle_y = robotY +  distance * sin(deg2rad(angle));
-            if(obstacle_x < map_vector[u].get_minX() || obstacle_x > map_vector[u].get_maxX() || obstacle_y < map_vector[u].get_minY() || obstacle_y > map_vector[u].get_maxY()){
-                if(u == map_vector.size()-1)
-                    create_new_map(obstacle_x, obstacle_y,robotTheta);
-                continue;
-            }
-            laser_data.Data[i].scanDistance = 0;
-            Point point = Point(obstacle_x, obstacle_y, 0);
-            map_vector[u].update_map(point, true);         
         }
     }
 }
@@ -109,17 +107,10 @@ void Mapping::load_map()
             int arg1, arg2;
             char comma;
             if (iss >> arg1 >> comma >> arg2) {
-                // std::cout << arg1 << " " << arg2 << std::endl;
-                // Point point(arg1, arg2, 0);
                 map.update_map(Point(arg1,arg2,0), 1);
-                map.update_map(Point(arg1,arg2+10,0), 1);
-                map.update_map(Point(arg1,arg2-10,0), 1);
-                map.update_map(Point(arg1+10,arg2,0), 1);
-                map.update_map(Point(arg1-10,arg2,0), 1);
-                map.update_map(Point(arg1,arg2+20,0), 1);
-                map.update_map(Point(arg1,arg2-20,0), 1);
-                map.update_map(Point(arg1+20,arg2,0), 1);
-                map.update_map(Point(arg1-20,arg2,0), 1);
+                for (int dx = -20; dx <= 20; dx+=10)
+                    for(int dy = -20; dy <= 20; dy+=10)
+                        map.update_map(Point(arg1+dx,arg2+dy,0), 1);
             }
             start = line.find('[', end);
             end = line.find(']', start);
@@ -170,6 +161,7 @@ void Mapping::save_map()
     if(width < maxY - minY){
         width = maxY - minY;
     }
+    width = width/2.0;
     std::cout << centerX << " " << centerY << " " << width << std::endl;
     Hash_map whole_map = Hash_map(centerX, centerY, 0, 10, width);
     for(size_t i = 0; i < map_vector.size(); i++){
@@ -196,12 +188,8 @@ void Mapping::save_map()
         for(size_t j = 0; j < map1[i].size(); j++){
             if(map1[i][j] == 1){
                 was_one = true;
-                // MyFile << "1";
                 MyFile << "["<< coordinates[i][j].getX()<< "," << coordinates[i][j].getY() << "]";
             }
-            // else{
-            //     MyFile << "0";
-            // }
         }
         if(was_one){
             MyFile << std::endl;
@@ -213,32 +201,6 @@ void Mapping::save_map()
 void Mapping::print_map(){
     std::vector<std::vector<uint16_t>> map1 = map.get_hash_map();
     std::vector<std::vector<Point>> coordinates = map.get_coordinates();
-    // for(size_t j = 0; j < map1.size(); j++){
-    //     // std::cout << "|";
-    //     for(size_t k = 0; k < map1[j].size(); k++){
-    //         if(coordinates[j][k].getX() == 0 && coordinates[j][k].getY() == 0){
-    //             std::cout << "X" << "   ";
-    //         }else{
-    //             if(map1[j][k] >= 100)
-    //                 std::cout << map1[j][k] << " ";
-    //             else if(map1[j][k] >= 10)
-    //                 std::cout << map1[j][k] << "  ";
-    //             else
-    //                 std::cout << map1[j][k] << "   ";
-    //         }
-    //         // if(map1[j][k] == 1){
-    //         //     std::cout << "X ";
-    //         // }
-    //         // else{
-    //         //     std::cout << "";
-    //         // }
-    //     }
-    //     std::cout << "|  ";
-    //     // for(size_t k = 0; k < coordinates[j].size(); k++){
-    //     //     std::cout << "[" << coordinates[j][k].getX() << "," << coordinates[j][k].getY() << "]";
-    //     // }
-    //     std::cout << "|" << std::endl;
-    // }
     for(size_t j = 0; j < map1.size(); j++){
         // std::cout << "|";
         for(size_t k = 0; k < map1[j].size(); k++){
