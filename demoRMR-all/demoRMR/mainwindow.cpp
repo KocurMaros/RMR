@@ -381,7 +381,7 @@ void MainWindow::on_pushButton_loadMap_clicked(){
     if (xOK && yOK){
         cout << "Loading map" << endl;
         maps->load_map();
-        maps->print_map();
+        // maps->print_map();
         cout << "Map loaded" << endl;
         Point point(x*100,y*100,0*PI/180);
         std::vector<Point> trajectory = maps->flood_fill(Point(robotX*100,robotY*100,0),point);
@@ -389,7 +389,7 @@ void MainWindow::on_pushButton_loadMap_clicked(){
             points_vector.push_back(p);
             cout << "X: " << p.getX() << " Y: " << p.getY() << endl;
         }
-        maps->print_map();
+        // maps->print_map();
         bruh = true;
     }
     else {

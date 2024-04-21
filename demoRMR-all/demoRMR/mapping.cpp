@@ -108,8 +108,8 @@ void Mapping::load_map()
             char comma;
             if (iss >> arg1 >> comma >> arg2) {
                 map.update_map(Point(arg1,arg2,0), 1);
-                for (int dx = -20; dx <= 20; dx+=10)
-                    for(int dy = -20; dy <= 20; dy+=10)
+                for (int dx = -30; dx <= 30; dx+=10)
+                    for(int dy = -30; dy <= 30; dy+=10)
                         map.update_map(Point(arg1+dx,arg2+dy,0), 1);
             }
             start = line.find('[', end);
@@ -275,9 +275,9 @@ std::vector<Point> Mapping::flood_fill(Point start, Point goal) {
     
     std::vector<Point> path = floodFillPathfind(ind_start_x, ind_start_y, ind_goal_x, ind_goal_y);
     // std::cout << "path size " << path.size() << std::endl;
-    for(size_t i = 0; i < path.size(); i++){
-        std::cout << path[i].getX() << " " << path[i].getY() << std::endl;
-    }
+    // for(size_t i = 0; i < path.size(); i++){
+    //     std::cout << path[i].getX() << " " << path[i].getY() << std::endl;
+    // }
     std::vector<Point> filteredPath;
     int prev_shiftX = 0, prev_shiftY = 0;
     int shift_bruh = 100;
@@ -315,7 +315,7 @@ std::vector<Point> Mapping::flood_fill(Point start, Point goal) {
 
     }
     filteredPath.push_back(Point(goal.getX()*10,goal.getY()*10,0));
-    print_map();
+    // print_map();
     return filteredPath;
     // std::cout << "filteredPath size " << filteredPath.size() << std::endl;
 
