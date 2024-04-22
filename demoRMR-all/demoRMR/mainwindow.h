@@ -139,6 +139,8 @@ private:
     bool first_run;
 
     bool bruh;
+    bool test_collision;
+
     int start_left;
     int start_right;
     int start_gyro;

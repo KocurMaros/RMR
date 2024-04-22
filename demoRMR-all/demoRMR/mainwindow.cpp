@@ -67,6 +67,7 @@ MainWindow::MainWindow(QWidget *parent) :
     collision_detection.getObstacle()->setFoundObstacle(false);
 
     wall_following = false;
+    test_collision = false;
 }
 
 MainWindow::~MainWindow()
@@ -125,12 +126,12 @@ void MainWindow::paintEvent(QPaintEvent *event)
             if(collision_detection.getObstacle()->getLeftEdge()->isFoundEdge()){
                 int xp= rect.width()-(rect.width()/2+collision_detection.getObstacle()->getLeftEdge()->getDistance()*100*sin((collision_detection.getObstacle()->getLeftEdge()->getAngle())*3.14159/180.0))+rect.topLeft().x();
                 int yp = rect.height()-(rect.height()/2+collision_detection.getObstacle()->getLeftEdge()->getDistance()*100*cos((collision_detection.getObstacle()->getLeftEdge()->getAngle())*3.14159/180.0))+rect.topLeft().y();
-                pero.setColor(Qt::blue);//farba je zelena je ne?
+                pero.setColor(Qt::blue); //lavy point bude modry
                 painter.setPen(pero);
                 if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
                     painter.drawEllipse(QPoint(xp, yp),2,2);
 
-                pero.setColor(Qt::red);
+                pero.setColor(Qt::red); //v lavom bude cerveny
                 painter.setPen(pero);
                 xp = rect.width()-(rect.width()/2+left_point_distance*100*sin(left_point_angle*3.14159/180.0))+rect.topLeft().x();
                 yp = rect.height()-(rect.height()/2+left_point_distance*100*cos(left_point_angle*3.14159/180.0))+rect.topLeft().y();
@@ -142,12 +143,12 @@ void MainWindow::paintEvent(QPaintEvent *event)
             if(collision_detection.getObstacle()->getRightEdge()->isFoundEdge()){
                 int xp=rect.width()-(rect.width()/2+collision_detection.getObstacle()->getRightEdge()->getDistance()*100*sin((collision_detection.getObstacle()->getRightEdge()->getAngle())*3.14159/180.0))+rect.topLeft().x();
                 int yp = rect.height()-(rect.height()/2+collision_detection.getObstacle()->getRightEdge()->getDistance()*100*cos((collision_detection.getObstacle()->getRightEdge()->getAngle())*3.14159/180.0))+rect.topLeft().y();
-                pero.setColor(Qt::blue);//farba je zelena je ne?
+                pero.setColor(Qt::white);//pravy roh bude zlty
                 painter.setPen(pero);
                 if(rect.contains(xp,yp))//ak je bod vo vnutri nasho obdlznika tak iba vtedy budem chciet kreslit
                     painter.drawEllipse(QPoint(xp, yp),2,2);
 
-                pero.setColor(Qt::red);
+                pero.setColor(Qt::yellow);//v pravom bude biely
                 painter.setPen(pero);
                 xp = rect.width()-(rect.width()/2+right_point_distance*100*sin(right_point_angle*3.14159/180.0))+rect.topLeft().x();
                 yp = rect.height()-(rect.height()/2+right_point_distance*100*cos(right_point_angle*3.14159/180.0))+rect.topLeft().y();
@@ -297,10 +298,11 @@ void MainWindow::on_pushButton_clicked()
     }
 }
 
-
+//testcollision button
 void MainWindow::on_pushButton_11_clicked()
 {
-
+    test_collision = true;
+    collision_detection.resetCollisionDetection();
 }
 
 
@@ -388,6 +390,15 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 return 0;
             }
             //toto vzdy nastavi ciel, ak je vo vektore bodov aspon jeden bod
+            controller->computeErrors(*actual_point,*desired_point);
+
+            //checknut ci sa da ist na cielovy bod a ci neni wall following
+            //ak ano chod na ciel
+
+            //ak si vo wall followingu, followuj stenu az dokym nevidis na ciel a zaroven nejsi blizsie od naposledy zapamatanej pozicie
+
+            //ked je pred tebou prekazka a nie si vo wall followingu, smeruj na jej hranu, zapamataj si aktualnu vzdialenost od ciela
+            //checkuj si vzdialenost, ak sa zacne niekedy zvacsovat prepni sa na sledovanie steny
 
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
             //check if the path is right
@@ -436,15 +447,15 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                             //set left point
                             addPointAtStart(*collision_detection.getObstacle()->getLeftEdge()->getPoint());
                         }
-                        collision_detection.resetCollisionDetection();
+                        // collision_detection.resetCollisionDetection();
                     }
                     else if(collision_detection.getObstacle()->getLeftEdge()->isPointFree()){
                         addPointAtStart(*collision_detection.getObstacle()->getLeftEdge()->getPoint());
-                        collision_detection.resetCollisionDetection();
+                        // collision_detection.resetCollisionDetection();
                     }
                     else if(collision_detection.getObstacle()->getRightEdge()->isPointFree()){
                         addPointAtStart(*collision_detection.getObstacle()->getRightEdge()->getPoint());
-                        collision_detection.resetCollisionDetection();
+                        // collision_detection.resetCollisionDetection();
                     }
                     else {
                         //follow wall TODO:
@@ -468,12 +479,16 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             }
             else{
                 //TODO: ?
-                return 0;
+                // return 0;
             }
+
+            if (test_collision){
+
 
             if(abs(controller->error_distance) < WITHIN_TOLERANCE){
                 controller->clearIntegral();
                 robot.setTranslationSpeed(0);
+                test_collision = false;
                 controller->ramp.clear_time_hard();
                 if (!points_vector.empty()){
                     //toto asi nemusi byt v ife - just to be sure
@@ -511,14 +526,16 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 else if(radius < -32767)
                     radius = -32767;
                 robot.setArcSpeed(trans_speed,radius);
-                std::cout<< "ARC" << std::endl;
-                std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
+                // std::cout<< "ARC" << std::endl;
+                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
             }
             if (rot_only && abs(controller->error_angle)<=4*PI/180){
                 rot_only = false;
                 controller->ramp.clear_time_hard();
                 controller->clearIntegral();
             }
+        }
+
         }
 
         ///toto neodporucam na nejake komplikovane struktury.signal slot robi kopiu dat. radsej vtedy posielajte
@@ -594,6 +611,10 @@ void MainWindow::findEdgeLeft(){
     int lidar_index = collision_detection.getObstacle()->getIndex()-1;
     //lidar je pravotocivy -> ked hladam nalavo tak musim zmensit index
     //distance je v metroch
+    double obstacle_angle = collision_detection.getObstacle()->getAngle();
+    if(obstacle_angle < 0){
+        obstacle_angle+= 360;
+    }
 
     std::cout << "CHECKING LEFT EDGE" << std::endl;
 
@@ -620,7 +641,10 @@ void MainWindow::findEdgeLeft(){
 
         prev_distance = lidar_distance;
         prev_angle = lidar_angle;
-        angle_difference = fabs(collision_detection.getObstacle()->getAngle() - lidar_angle);
+        if(lidar_angle < 0){
+            lidar_angle+= 360;
+        }
+        angle_difference = fabs(obstacle_angle - lidar_angle);
         lidar_index--;
     }
 }
@@ -636,14 +660,17 @@ void MainWindow::findEdgeRight(){
     int lidar_index = collision_detection.getObstacle()->getIndex()+1;
     //lidar je pravotocivy -> ked hladam napravo tak musim zvacsit index
     //distance je v metroch
-
+    double obstacle_angle = collision_detection.getObstacle()->getAngle();
+    if(obstacle_angle < 0){
+        obstacle_angle+= 360;
+    }
     std::cout << "CHECKING RIGHT EDGE" << std::endl;
 
     while(angle_difference < 180){
         if(lidar_index > (collision_detection.getLaserData().numberOfScans - 1)){
             lidar_index = 0;
         }
-
+        //posunut o 2PI nech sa nestane ze by to prestalo checkovat ked to prejde cez 180
         double lidar_angle = CollisionDetection::normalizeLidarAngle(collision_detection.getLaserData().Data[lidar_index].scanAngle);
         double lidar_distance = collision_detection.getLaserData().Data[lidar_index].scanDistance/1000.0;
 
@@ -659,7 +686,12 @@ void MainWindow::findEdgeRight(){
 
         prev_distance = lidar_distance;
         prev_angle = lidar_angle;
-        angle_difference = fabs(collision_detection.getObstacle()->getAngle() - lidar_angle);
+
+        if (lidar_angle < 0){
+            lidar_angle += 360;
+        }
+
+        angle_difference = fabs(obstacle_angle - lidar_angle);
         lidar_index++;
     }
 }
