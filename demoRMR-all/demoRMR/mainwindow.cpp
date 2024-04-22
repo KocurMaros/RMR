@@ -600,6 +600,17 @@ bool MainWindow::isThereObstacleInZone(double zoneAngle, double zoneDistance) {
     return false;
 }
 
+double MainWindow::angDiff(double alpha, double beta) {
+    double diff = beta - alpha;
+    // Normalize the difference
+    diff = fmod(diff + 180, 360);
+    if (diff < 0)
+        diff += 360;
+    diff -= 180;
+    return fabs(diff);
+}
+
+
 void MainWindow::findEdgeLeft(){
     collision_detection.getObstacle()->getLeftEdge()->setPointFree(false);
 
@@ -611,10 +622,8 @@ void MainWindow::findEdgeLeft(){
     int lidar_index = collision_detection.getObstacle()->getIndex()-1;
     //lidar je pravotocivy -> ked hladam nalavo tak musim zmensit index
     //distance je v metroch
+
     double obstacle_angle = collision_detection.getObstacle()->getAngle();
-    if(obstacle_angle < 0){
-        obstacle_angle+= 360;
-    }
 
     std::cout << "CHECKING LEFT EDGE" << std::endl;
 
@@ -626,25 +635,25 @@ void MainWindow::findEdgeLeft(){
         double lidar_angle = CollisionDetection::normalizeLidarAngle(collision_detection.getLaserData().Data[lidar_index].scanAngle);
         double lidar_distance = collision_detection.getLaserData().Data[lidar_index].scanDistance/1000.0;
 
-        // std::cout << "lidar_angle: " << lidar_angle << " lidar_distance: " << lidar_distance << std::endl;
-        // std::cout << "prev_angle: " << prev_angle << " prev_distance: " << prev_distance << std::endl;
+        std::cout << "lidar_angle: " << lidar_angle << " lidar_distance: " << lidar_distance << std::endl;
+        std::cout << "prev_angle: " << prev_angle << " prev_distance: " << prev_distance << std::endl;
+        std::cout << "obstacle_angle: " << obstacle_angle << std::endl;
 
-        if((lidar_distance - prev_distance > Obstacle::distanceThreshold) || lidar_distance == 0.0){
+        if(((lidar_distance - prev_distance) > Obstacle::distanceThreshold) || (lidar_distance == 0.0)){
 
             //TODO: vratit roh predoslej vzdialenosti a predosleho uhla asi zejo
-            collision_detection.getObstacle()->getLeftEdge()->setFoundEdge(true);
             collision_detection.getObstacle()->getLeftEdge()->setDistance(prev_distance);
             collision_detection.getObstacle()->getLeftEdge()->setAngle(prev_angle);
+            collision_detection.getObstacle()->getLeftEdge()->setFoundEdge(true);
             std::cout << "LEFT EDGE FOUND" << std::endl;
             break;
         }
 
         prev_distance = lidar_distance;
         prev_angle = lidar_angle;
-        if(lidar_angle < 0){
-            lidar_angle+= 360;
-        }
-        angle_difference = fabs(obstacle_angle - lidar_angle);
+
+        angle_difference = angDiff(obstacle_angle, lidar_angle);
+        std::cout << "angle_difference: " << angle_difference << std::endl;
         lidar_index--;
     }
 }
@@ -661,9 +670,7 @@ void MainWindow::findEdgeRight(){
     //lidar je pravotocivy -> ked hladam napravo tak musim zvacsit index
     //distance je v metroch
     double obstacle_angle = collision_detection.getObstacle()->getAngle();
-    if(obstacle_angle < 0){
-        obstacle_angle+= 360;
-    }
+
     std::cout << "CHECKING RIGHT EDGE" << std::endl;
 
     while(angle_difference < 180){
@@ -677,9 +684,9 @@ void MainWindow::findEdgeRight(){
         if((lidar_distance - prev_distance > Obstacle::distanceThreshold) || lidar_distance == 0.0){
 
             //TODO: vratit roh predoslej vzdialenosti a predosleho uhla asi zejo
-            collision_detection.getObstacle()->getRightEdge()->setFoundEdge(true);
             collision_detection.getObstacle()->getRightEdge()->setDistance(prev_distance);
             collision_detection.getObstacle()->getRightEdge()->setAngle(prev_angle);
+            collision_detection.getObstacle()->getRightEdge()->setFoundEdge(true);
             std::cout << "RIGHT EDGE FOUND" << std::endl;
             break;
         }
@@ -687,11 +694,7 @@ void MainWindow::findEdgeRight(){
         prev_distance = lidar_distance;
         prev_angle = lidar_angle;
 
-        if (lidar_angle < 0){
-            lidar_angle += 360;
-        }
-
-        angle_difference = fabs(obstacle_angle - lidar_angle);
+        angle_difference = angDiff(obstacle_angle, lidar_angle);
         lidar_index++;
     }
 }

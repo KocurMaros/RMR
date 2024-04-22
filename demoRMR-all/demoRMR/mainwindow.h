@@ -50,7 +50,7 @@ class MainWindow : public QMainWindow
 public:
     
     MovementsParam param;
-
+    static double angDiff(double alpha, double beta);
     bool useCamera1;
   //  cv::VideoCapture cap;
 
