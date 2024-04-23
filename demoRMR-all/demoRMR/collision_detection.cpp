@@ -87,22 +87,39 @@ double CollisionDetection::normalizeLidarAngle(double angle){
     return angle;
 }
 
-void Obstacle::calculateLeftEdgePoint(double robotX, double robotY) {
-    double c = sqrt(pow(getLeftEdge()->getDistance(),2) + pow(CRITICAL_DISTANCE*3/2,2));
-    double alfa = asin(CRITICAL_DISTANCE*3/2/c)+ getLeftEdge()->getAngle() * PI / 180;
+void Obstacle::calculateLeftEdgePoint(double robotX, double robotY, double robotFi) {
+    double c = sqrt(pow(getLeftEdge()->getDistance(),2) - pow(CRITICAL_DISTANCE*3/2,2));
+    double alfa = asin(CRITICAL_DISTANCE*3/2/getLeftEdge()->getDistance())+ getLeftEdge()->getAngle() * PI / 180;
+
+    std::cout << "asin: " << asin(CRITICAL_DISTANCE*3/2/getLeftEdge()->getDistance())*180/PI << std::endl;
+    std::cout << "alfa: " << alfa*180/PI << std::endl;
+    std::cout << "left edge angle: " << getLeftEdge()->getAngle() << std::endl;
+
+    alfa = alfa + robotFi*PI/180;
 
     if (alfa >= PI) alfa -= 2*PI;
     else if (alfa < -PI) alfa += 2*PI;
 
+
+    // mozno poriesit tieto suradnicove systemy a tak dalej ..... netusim where chyba uz naozaj :D
+
     c = c + CRITICAL_DISTANCE;
     double x = robotX +  c * cos(alfa);
     double y = robotY + c * sin(alfa);
+
+    std::cout << "c: " << c << std::endl;
+    std::cout << "x: " << x << std::endl;
+    std::cout << "y: " << y << std::endl;
+    std::cout << "robotX: " << robotX << std::endl;
+    std::cout << "robotY: " << robotY << std::endl;
     getLeftEdge()->getPoint()->setPoint(x*1000,y*1000,0);
 }
 
-void Obstacle::calculateRightEdgePoint(double robotX, double robotY) {
-    double c = sqrt(pow(getRightEdge()->getDistance(),2) + pow(CRITICAL_DISTANCE*3/2,2));
-    double alfa = getRightEdge()->getAngle() * PI / 180 - asin(CRITICAL_DISTANCE*3/2/c);
+void Obstacle::calculateRightEdgePoint(double robotX, double robotY, double robotFi) {
+    double c = sqrt(pow(getRightEdge()->getDistance(),2) - pow(CRITICAL_DISTANCE*3/2,2));
+    double alfa = getRightEdge()->getAngle() * PI / 180 - asin(CRITICAL_DISTANCE*3/2/getRightEdge()->getDistance());
+
+    alfa = alfa + robotFi*PI/180;
 
     if (alfa >= PI) alfa -= 2*PI;
     else if (alfa < -PI) alfa += 2*PI;

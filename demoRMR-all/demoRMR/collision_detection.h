@@ -49,8 +49,8 @@ public:
     Edge* getRightEdge()  {return &right_edge;}
     bool isFoundObstacle()  {return found_obstacle;}
     void setFoundObstacle(bool found_obstacle) {this->found_obstacle = found_obstacle;}
-    void calculateLeftEdgePoint(double robotX, double robotY);
-    void calculateRightEdgePoint(double robotX, double robotY);
+    void calculateLeftEdgePoint(double robotX, double robotY,double robotFi);
+    void calculateRightEdgePoint(double robotX, double robotY, double robotFi);
 
     //TODO: scalovat podla initial vzdialenosti objektu (alebo podla vzdialenosti predosleho bodu ci co)?
     //TODO: doladit velkost distanceThresholdu.....

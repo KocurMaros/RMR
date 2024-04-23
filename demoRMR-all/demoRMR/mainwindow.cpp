@@ -406,16 +406,17 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
 
             if (!collision_detection.getObstacle()->isFoundObstacle()){
-                std::cout<< "Obstacle: " << collision_detection.getObstacle()->isFoundObstacle() << std::endl;
+                // std::cout<< "Obstacle: " << collision_detection.getObstacle()->isFoundObstacle() << std::endl;
                 if(isThereObstacleInZone(controller->error_angle/PI*180,controller->error_distance/1000.0)){
 
-                    std::cout<< "Obstacle has been found!" << std::endl;
+                    // std::cout<< "Obstacle has been found!" << std::endl;
                     findEdgeLeft();
+
                     if(collision_detection.getObstacle()->getLeftEdge()->isFoundEdge()){
                         std::cout << "Obstacle left edge has been found!" << std::endl;
-                        collision_detection.getObstacle()->calculateLeftEdgePoint(robotX,robotY);
+                        collision_detection.getObstacle()->calculateLeftEdgePoint(robotX,robotY,robotFi);
                         if (!checkLeftEdgePointObstacle()){
-                            std::cout << "there is no obstacle brother" << std::endl;
+                            // std::cout << "there is no obstacle brother" << std::endl;
                             collision_detection.getObstacle()->getLeftEdge()->setPointFree(true);
                             collision_detection.getObstacle()->getLeftEdge()->setDistanceToGoal(calculateDistanceToGoal(actual_point,&goal_point,collision_detection.getObstacle()->getLeftEdge()->getPoint()));
                         }
@@ -426,10 +427,10 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
                     findEdgeRight();
                     if(collision_detection.getObstacle()->getRightEdge()->isFoundEdge()){
-                        std::cout << "Obstacle right edge has been found!" << std::endl;
-                        collision_detection.getObstacle()->calculateRightEdgePoint(robotX,robotY);
+                        // std::cout << "Obstacle right edge has been found!" << std::endl;
+                        collision_detection.getObstacle()->calculateRightEdgePoint(robotX,robotY,robotFi);
                         if (!checkRightEdgePointObstacle()){
-                            std::cout << "there is no obstacle brother2" << std::endl;
+                            // std::cout << "there is no obstacle brother2" << std::endl;
                             collision_detection.getObstacle()->getRightEdge()->setPointFree(true);
                             collision_detection.getObstacle()->getRightEdge()->setDistanceToGoal(calculateDistanceToGoal(actual_point,&goal_point,collision_detection.getObstacle()->getRightEdge()->getPoint()));
                         }
@@ -635,10 +636,6 @@ void MainWindow::findEdgeLeft(){
         double lidar_angle = CollisionDetection::normalizeLidarAngle(collision_detection.getLaserData().Data[lidar_index].scanAngle);
         double lidar_distance = collision_detection.getLaserData().Data[lidar_index].scanDistance/1000.0;
 
-        std::cout << "lidar_angle: " << lidar_angle << " lidar_distance: " << lidar_distance << std::endl;
-        std::cout << "prev_angle: " << prev_angle << " prev_distance: " << prev_distance << std::endl;
-        std::cout << "obstacle_angle: " << obstacle_angle << std::endl;
-
         if(((lidar_distance - prev_distance) > Obstacle::distanceThreshold) || (lidar_distance == 0.0)){
 
             //TODO: vratit roh predoslej vzdialenosti a predosleho uhla asi zejo
@@ -653,7 +650,7 @@ void MainWindow::findEdgeLeft(){
         prev_angle = lidar_angle;
 
         angle_difference = angDiff(obstacle_angle, lidar_angle);
-        std::cout << "angle_difference: " << angle_difference << std::endl;
+        // std::cout << "angle_difference: " << angle_difference << std::endl;
         lidar_index--;
     }
 }
@@ -671,7 +668,7 @@ void MainWindow::findEdgeRight(){
     //distance je v metroch
     double obstacle_angle = collision_detection.getObstacle()->getAngle();
 
-    std::cout << "CHECKING RIGHT EDGE" << std::endl;
+    // std::cout << "CHECKING RIGHT EDGE" << std::endl;
 
     while(angle_difference < 180){
         if(lidar_index > (collision_detection.getLaserData().numberOfScans - 1)){
@@ -687,7 +684,7 @@ void MainWindow::findEdgeRight(){
             collision_detection.getObstacle()->getRightEdge()->setDistance(prev_distance);
             collision_detection.getObstacle()->getRightEdge()->setAngle(prev_angle);
             collision_detection.getObstacle()->getRightEdge()->setFoundEdge(true);
-            std::cout << "RIGHT EDGE FOUND" << std::endl;
+            // std::cout << "RIGHT EDGE FOUND" << std::endl;
             break;
         }
 
