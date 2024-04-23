@@ -29,7 +29,7 @@ class Mapping
 private:
     std::vector<Hash_map> map_vector;
     Hash_map map;
-    std::string  map_file = "map_rework3.txt";
+    std::string  map_file = "map_simulation.txt";
 public:
     Mapping(/* args */);
     ~Mapping();

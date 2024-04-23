@@ -55,6 +55,7 @@ void Hash_map::update_map(Point point, uint16_t occupied){
             break;
         }
     }
+    //odratat min podelit square dim a zaokrouhlit na dolu
     if(i < map_dimension && j < map_dimension){
         if(coordinates[i][0].getX() < boarder_minX)
             boarder_minX = coordinates[i][0].getX();
@@ -64,14 +65,7 @@ void Hash_map::update_map(Point point, uint16_t occupied){
             boarder_minY = coordinates[0][j].getY();
         if(coordinates[0][j].getY() > boarder_maxY)
             boarder_maxY = coordinates[0][j].getY();
-        if (occupied != 0)
-        {
-            hash_map[i][j] = occupied;
-        }
-        else
-        {
-            hash_map[i][j] = 0;
-        }
+        hash_map[i][j] = occupied;
     }
 }
 

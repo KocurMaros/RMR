@@ -43,6 +43,8 @@ void Mapping::create_new_map(double obstacleX, double obstacleY, double robotThe
             break;
         l++;
     }
+    // k = (int)obstacleX/620;
+    // l = (int)obstacleY/620;
     map_vector.push_back(Hash_map(620.0*(k), 620.0*l, robotTheta, 10, 63)); 
     std::cout << "Map created " << " " << 620.0*(k) << " " << 620.0*l << " " << robotTheta << std::endl;
 }
@@ -63,8 +65,6 @@ void Mapping::create_map(LaserMeasurement laser_data, double robotX, double robo
                 break;
                 // u = map_vector.size();
             }else if(u == map_vector.size()-1){
-                if(obstacle_x > 600 || obstacle_y > 600 || obstacle_x == 310 || obstacle_y == 310)
-                    continue;
                 std::cout << "Map creating " << " " << obstacle_x << " " << obstacle_y << " " << robotTheta << std::endl;
                 create_new_map(obstacle_x, obstacle_y,robotTheta);
             }
@@ -289,27 +289,18 @@ std::vector<Point> Mapping::flood_fill(Point start, Point goal) {
             sameY = true;
         
         if(path[i].getX() == path[i+1].getX() && path[i].getY() != path[i+1].getY() && sameY){
-            if((path[i+1].getY() - path[i-1].getY()) > 0){
-                filteredPath.push_back(Point(path[i].getX(),path[i].getY(),0));
-            }
-            else{
-                filteredPath.push_back(Point(path[i].getX(),path[i].getY(),0));
-            }
+            filteredPath.push_back(Point(path[i].getX(),path[i].getY(),0));
             // filteredPath.push_back(path[i]);
             sameY = false;
-            i--;
-            // continue;
+            // i--;
+            continue;
         }
         if(path[i].getY() == path[i+1].getY() && path[i].getX() != path[i+1].getX() && sameX){
-            if((path[i].getX() - path[i-1].getX()) > 0){
-                filteredPath.push_back(Point(path[i].getX(),path[i].getY(),0));
-            } 
-            else{
-                filteredPath.push_back(Point(path[i].getX(),path[i].getY(),0));
-            }
+         
+            filteredPath.push_back(Point(path[i].getX(),path[i].getY(),0));
             // filteredPath.push_back(path[i]);
             sameX = false;
-            i--;
+            // i--;
             continue;
         }
 
@@ -417,6 +408,8 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
                         }
                     }
                     // std::cout << newX << " " << newY << " " << lowest_index << map.get_coordinates()[newX][newY].getX() << " " << map.get_coordinates()[newX][newY].getY() <<  std::endl;
+                    // map.update_map(Point(map.get_coordinates()[newX][newY].getX(), map.get_coordinates()[newX][newY].getY(), 0), current.distance + 1);
+
                     map.update_map(Point(map.get_coordinates()[newX][newY].getX(), map.get_coordinates()[newX][newY].getY(), 0), lowest_index);
                     // std::cout << newX << " " << newY << " " << lowest_index << std::endl;
                     
@@ -429,3 +422,10 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
     // No path found
     return {};
 }
+
+
+/**
+ *  nahradit 379 -418 map.update_map(Point(map.get_coordinates()[newX][newY].getX(), map.get_coordinates()[newX][newY].getY(), 0), current.distance + 1);]
+ * 354-369 nechgeckovat o 2 policka bo to je zbytocne
+ * Priority queue zmenit na queue
+*/

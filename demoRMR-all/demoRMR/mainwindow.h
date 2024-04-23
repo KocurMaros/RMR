@@ -154,6 +154,7 @@ private:
     uint8_t mapping;
     bool mapping_start = false;
     double m_rot_speed;
+    bool m_can_map;
     bool save_map = false;
     bool read_map = false;
 

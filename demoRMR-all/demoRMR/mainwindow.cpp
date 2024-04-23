@@ -219,6 +219,14 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 bruh = false;
                 return 0; //break maybe?
             }
+
+            double error_distance = sqrt(pow(actual_point->getX() - prev_x_map, 2) + pow(actual_point->getY() - prev_y_map, 2));
+            if(m_rot_speed < 0.01 && error_distance > 500 ){
+                m_can_map = true;
+                prev_x_map = actual_point->getX();
+                prev_y_map = actual_point->getY();
+            }
+ 
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
             m_rot_speed = rot_speed;
 
@@ -286,14 +294,15 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
     //tu mozete robit s datami z lidaru.. napriklad najst prekazky, zapisat do mapy. naplanovat ako sa prekazke vyhnut.
     // ale nic vypoctovo narocne - to iste vlakno ktore cita data z lidaru
     updateLaserPicture=1;
-    double error_distance = sqrt(pow(actual_point->getX() - prev_x_map, 2) + pow(actual_point->getY() - prev_y_map, 2));
+    // double error_distance = sqrt(pow(actual_point->getX() - prev_x_map, 2) + pow(actual_point->getY() - prev_y_map, 2));
     if(mapping_start){
-        if(m_rot_speed < 0.01 && error_distance > 50 ){
-            cout << "Rot speed " << m_rot_speed << " dis " << error_distance << endl;
+        if(m_can_map){
+            m_can_map = false;
+            // cout << "Rot speed " << m_rot_speed << " dis " << error_distance << endl;
             maps->Gmapping(copyOfLaserData, robotX, robotY, robotFi);
             cout << "Updating map from lidar " << endl;
-            prev_x_map = actual_point->getX();
-            prev_y_map = actual_point->getY();
+            // prev_x_map = actual_point->getX();
+            // prev_y_map = actual_point->getY();
         }
     }
     update();//tento prikaz prinuti prekreslit obrazovku.. zavola sa paintEvent funkcia
@@ -361,6 +370,7 @@ void MainWindow::on_pushButton_mapping_clicked(){
         points_vector.push_back(Point(3*1000,0.8*1000,0));
         points_vector.push_back(Point(3*1000,-1.0*1000,0));
         points_vector.push_back(Point(2*1000,-1.0*1000,0));
+        points_vector.push_back(Point(1.5*1000,-1.0*1000,0));
     }else{
         ui->pushButton_mapping->setText("start mapping");
         mapping_start = false;
@@ -381,7 +391,7 @@ void MainWindow::on_pushButton_loadMap_clicked(){
     if (xOK && yOK){
         cout << "Loading map" << endl;
         maps->load_map();
-        // maps->print_map();
+        maps->print_map();
         cout << "Map loaded" << endl;
         Point point(x*100,y*100,0*PI/180);
         std::vector<Point> trajectory = maps->flood_fill(Point(robotX*100,robotY*100,0),point);
@@ -389,7 +399,7 @@ void MainWindow::on_pushButton_loadMap_clicked(){
             points_vector.push_back(p);
             cout << "X: " << p.getX() << " Y: " << p.getY() << endl;
         }
-        // maps->print_map();
+        maps->print_map();
         bruh = true;
     }
     else {
