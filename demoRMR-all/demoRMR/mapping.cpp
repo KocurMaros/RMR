@@ -233,6 +233,7 @@ std::vector<Point> Mapping::flood_fill(Point start, Point goal) {
     
     int x = goal.getX();
     int y = goal.getY();
+
     for (size_t i = 0; i < map.get_map_dimension(); i++)
     {
         if (map.get_coordinates()[i][0].getX() <= x && map.get_coordinates()[i + 1][0].getX() > x)
@@ -274,10 +275,6 @@ std::vector<Point> Mapping::flood_fill(Point start, Point goal) {
     std::cout << "Map ind " << map.get_coordinates()[ind_start_x][ind_start_y].getX() << " " << map.get_coordinates()[ind_start_x][ind_start_y].getY() << " " << map.get_coordinates()[ind_goal_x][ind_goal_y].getX() << " " << map.get_coordinates()[ind_goal_x][ind_goal_y].getY() << std::endl; 
     
     std::vector<Point> path = floodFillPathfind(ind_start_x, ind_start_y, ind_goal_x, ind_goal_y);
-    // std::cout << "path size " << path.size() << std::endl;
-    // for(size_t i = 0; i < path.size(); i++){
-    //     std::cout << path[i].getX() << " " << path[i].getY() << std::endl;
-    // }
     std::vector<Point> filteredPath;
     int prev_shiftX = 0, prev_shiftY = 0;
     int shift_bruh = 100;
@@ -287,38 +284,25 @@ std::vector<Point> Mapping::flood_fill(Point start, Point goal) {
             sameX = true;
         if(path[i].getY() == path[i+1].getY() && !sameX)
             sameY = true;
-        
         if(path[i].getX() == path[i+1].getX() && path[i].getY() != path[i+1].getY() && sameY){
             filteredPath.push_back(Point(path[i].getX(),path[i].getY(),0));
-            // filteredPath.push_back(path[i]);
             sameY = false;
-            // i--;
             continue;
         }
         if(path[i].getY() == path[i+1].getY() && path[i].getX() != path[i+1].getX() && sameX){
-         
             filteredPath.push_back(Point(path[i].getX(),path[i].getY(),0));
-            // filteredPath.push_back(path[i]);
             sameX = false;
-            // i--;
             continue;
         }
-
     }
     filteredPath.push_back(Point(goal.getX()*10,goal.getY()*10,0));
-    // print_map();
     return filteredPath;
-    // std::cout << "filteredPath size " << filteredPath.size() << std::endl;
-
-    // for(size_t i = 0; i < filteredPath.size(); i++){
-    //     std::cout << filteredPath[i].getX() << " " << filteredPath[i].getY() << std::endl;
-    // }
 }
 
 std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX, int goalY) {
     std::vector<std::vector<uint16_t>> grid = map.get_hash_map();
 
-    int lowest_index = 3;
+    int next_index = 3;
     
     int rows = map.get_map_dimension();
     int cols = map.get_map_dimension();
@@ -341,31 +325,25 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
             act_index = grid[x_path][y_path];
             std::vector<Point> path;
             path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
-            while(act_index != 3){
-                if(act_index > grid[x_path][y_path+1] && grid[x_path][y_path+1] >=2 && grid[x_path][y_path+2] >= 2){
+
+            while(act_index != 2){
+                if(act_index > grid[x_path][y_path+1]){
                     y_path = y_path + 1;
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
-                }
-                else if(act_index > grid[x_path+1][y_path] && grid[x_path+1][y_path] >=2 && grid[x_path+2][y_path] >= 2){
+                }else if(act_index > grid[x_path+1][y_path]){
                     x_path = x_path + 1;
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
-                }
-                else if(act_index > grid[x_path][y_path-1] && grid[x_path][y_path-1] >=2 && grid[x_path][y_path-2] >= 2){  
+                }else if(act_index > grid[x_path][y_path-1]){
                     y_path = y_path - 1;
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
-                }
-                else if(act_index > grid[x_path-1][y_path] && grid[x_path-1][y_path] >=2 && grid[x_path-2][y_path] >= 2){
+                }else if(act_index > grid[x_path-1][y_path]){
                     x_path = x_path - 1;
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
                 }
-                // std::cout << grid[x_path][y_path] << " " << grid[x_path-1][y_path] << " " << grid[x_path+1][y_path] << " " << grid[x_path][y_path-1] << " " << grid[x_path][y_path+1] << std::endl;
-                // std::cout << "x_path " << x_path << " y_path " << y_path << std::endl;
-                // std::cout << grid[x_path][y_path] << std::endl;
                 act_index = grid[x_path][y_path];
             }
             return path;
         }
-
         // Explore neighbors (up, down, left, right)
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
@@ -374,38 +352,35 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
                 }
                 int newX = current.x + dx;
                 int newY = current.y + dy;
-
+                // X 0 X
+                // 0 2 0
+                // X 0 X
                 // Check for valid neighbors within grid bounds and not walls
                 if (newX >= 0 && newX < cols && newY >= 0 && newY < rows && grid[newX][newY] == 0) {
-        
+
+                    // X 0 X
+                    // 0 2 0
+                    // X 0 X
+                    //pick 1 point from 4 points
                     PointQueue neighbor = {newX, newY, current.distance + 1}; // Increment distance
                     frontier.push(neighbor);
-                    
-                    // grid = map.get_hash_map();
-                    lowest_index = 3;
-                    for (int dxx = -1; dxx <= 1; dxx++) {
-                        for (int dyy = -1; dyy <= 1; dyy++) {
-                            if(abs(dyy) == abs(dxx)){
-                                continue;
-                            }
-                            int prevX = newX + dxx;
-                            int prevY = newY + dyy;
-                            if (prevX >= 0 && prevX < cols && prevY >= 0 && prevY < rows && grid[prevX][prevY] != 1 && 
-                                grid[prevX][prevY] >= lowest_index) {
-                                // std::cout << lowest_index << " " << grid[prevX][prevY] << std::endl;
-                                lowest_index = grid[prevX][prevY]+1;
-                            }
-                        }
-                    }
-                    map.update_map(Point(map.get_coordinates()[newX][newY].getX(), map.get_coordinates()[newX][newY].getY(), 0), lowest_index);
-                    grid[newX][newY] = lowest_index;
+                    // X 0 4 0 X
+                    // 0 4 3 4 0
+                    // 4 3 2 3 4
+                    // 0 A 3 4 0
+                    // X 0 4 0 X
+                    // A represent actual picked neighbor and check lower index from 4 neighbors  << that was before
+
+                    // next index is my index + 1
+                    next_index = grid[current.x][current.y]+1;
+                    map.update_map(Point(map.get_coordinates()[newX][newY].getX(), map.get_coordinates()[newX][newY].getY(), 0), next_index);
+                    grid[newX][newY] = next_index;
                 }
             }
         }
     }
     return {};
 }
-
 
 /**
  *  nahradit 379 -418 map.update_map(Point(map.get_coordinates()[newX][newY].getX(), map.get_coordinates()[newX][newY].getY(), 0), current.distance + 1);]

@@ -25,13 +25,10 @@ Hash_map::Hash_map(double x, double y, double theta, uint8_t square_dim, uint8_t
                 minY = yy;
             if(yy > maxY)
                 maxY = yy;
-            // std::cout << "x " << x + (i - (map_dimension-1)/2) * square_dimension << " y " << y + (j - (map_dimension-1)/2) * square_dimension << std::endl;
         }
         hash_map.push_back(row_hash);
         coordinates.push_back(row);
     }
-    // std::cout << minX << " " << maxX << " " << minY << " " << maxY << std::endl;
-    // std::cout << "x " << x << " y " << y << " theta " << theta << " square_dim " << square_dimension << " map_dim " << map_dimension << std::endl;
 }
 Hash_map::~Hash_map(){}
 
