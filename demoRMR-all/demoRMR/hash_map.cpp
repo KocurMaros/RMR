@@ -33,36 +33,26 @@ Hash_map::Hash_map(double x, double y, double theta, uint8_t square_dim, uint8_t
 Hash_map::~Hash_map(){}
 
 void Hash_map::update_map(Point point, uint16_t occupied){
-    int x = point.getX();
-    int y = point.getY();
-    int i = 0;
-    int j = 0;
 
-    for (i = 0; i < map_dimension; i++)
-    {
-        if (coordinates[i][0].getX() <= x && coordinates[i + 1][0].getX() > x)
-        {
-            break;
-        }
-    }
-    for (j = 0; j < map_dimension; j++)
-    {
-        if (coordinates[0][j].getY() <= y && coordinates[0][j + 1].getY() > y)
-        {
-            break;
-        }
-    }
-    //odratat min podelit square dim a zaokrouhlit na dolu
-    if(i < map_dimension && j < map_dimension){
-        if(coordinates[i][0].getX() < boarder_minX)
-            boarder_minX = coordinates[i][0].getX();
-        if(coordinates[i][0].getX() > boarder_maxX)
-            boarder_maxX = coordinates[i][0].getX();
-        if(coordinates[0][j].getY() < boarder_minY)
-            boarder_minY = coordinates[0][j].getY();
-        if(coordinates[0][j].getY() > boarder_maxY)
-            boarder_maxY = coordinates[0][j].getY();
-        hash_map[i][j] = occupied;
+    int index_x, index_y;
+
+    double min_x = coordinates[0][0].getX();
+    double min_y = coordinates[0][0].getY();
+    double dx = coordinates[1][0].getX() - min_x;
+    double dy = coordinates[0][1].getY() - min_y;
+    index_x = static_cast<int>((point.getX() - min_x) / dx);
+    index_y = static_cast<int>((point.getY() - min_y) / dy);
+
+    if(index_x < map_dimension && index_y < map_dimension){
+        if(coordinates[index_x][0].getX() < boarder_minX)
+            boarder_minX = coordinates[index_x][0].getX();
+        if(coordinates[index_x][0].getX() > boarder_maxX)
+            boarder_maxX = coordinates[index_x][0].getX();
+        if(coordinates[0][index_y].getY() < boarder_minY)
+            boarder_minY = coordinates[0][index_y].getY();
+        if(coordinates[0][index_y].getY() > boarder_maxY)
+            boarder_maxY = coordinates[0][index_y].getY();
+        hash_map[index_x][index_y] = occupied;
     }
 }
 

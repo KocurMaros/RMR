@@ -247,7 +247,6 @@ std::vector<Point> Mapping::flood_fill(Point start, Point goal) {
 
     std::cout << "Point coord" << start.getX() << " " << start.getY() << " " << goal.getX() << " " << goal.getY() << std::endl;
     std::cout << "ind_start_x " << ind_start_x << " ind_start_y " << ind_start_y << " ind_goal_x " << ind_goal_x << " ind_goal_y " << ind_goal_y << std::endl;
-    std::cout << "ind_start_xx " << ind_start_xx << " ind_start_yy " << ind_start_yy << " ind_goal_xx " << ind_goal_xx << " ind_goal_yy " << ind_goal_yy << std::endl;
     std::cout << "Map ind " << map.get_coordinates()[ind_start_x][ind_start_y].getX() << " " << map.get_coordinates()[ind_start_x][ind_start_y].getY() << " " << map.get_coordinates()[ind_goal_x][ind_goal_y].getX() << " " << map.get_coordinates()[ind_goal_x][ind_goal_y].getY() << std::endl; 
     
     std::vector<Point> path = floodFillPathfind(ind_start_x, ind_start_y, ind_goal_x, ind_goal_y);
@@ -294,8 +293,7 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
         frontier.pop();
 
         if (current.x == startX && current.y == startY) {
-            std::cout << "found goal" << std::endl;
-            // print_map();
+            print_map();
             uint16_t act_index;
             int x_path = current.x;
             int y_path = current.y;
@@ -304,22 +302,24 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
             std::vector<Point> path;
             path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
 
-            while(act_index != 2){
-                if(act_index > grid[x_path][y_path+1]){
+            while(act_index != 3){
+                if(act_index > grid[x_path][y_path+1] && grid[x_path][y_path+1] > 1){
                     y_path = y_path + 1;
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
-                }else if(act_index > grid[x_path+1][y_path]){
+                }else if(act_index > grid[x_path+1][y_path] && grid[x_path+1][y_path] > 1){
                     x_path = x_path + 1;
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
-                }else if(act_index > grid[x_path][y_path-1]){
+                }else if(act_index > grid[x_path][y_path-1] && grid[x_path][y_path-1] > 1){
                     y_path = y_path - 1;
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
-                }else if(act_index > grid[x_path-1][y_path]){
+                }else if(act_index > grid[x_path-1][y_path] && grid[x_path-1][y_path] > 1){
                     x_path = x_path - 1;
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
                 }
                 act_index = grid[x_path][y_path];
+                std::cout << "act_index " << act_index << std::endl;
             }
+            std::cout << "found goal" << std::endl;
             return path;
         }
         // Explore neighbors (up, down, left, right)
