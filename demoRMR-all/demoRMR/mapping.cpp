@@ -323,13 +323,10 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
     int rows = map.get_map_dimension();
     int cols = map.get_map_dimension();
 
-    std::vector<std::vector<bool>> visited(rows, std::vector<bool>(cols, false));
     std::priority_queue<PointQueue> frontier;
 
     PointQueue start = {goalX, goalY, 0};
     frontier.push(start);
-    visited[goalX][goalY] = true;
-
     while (!frontier.empty()) {
         PointQueue current = frontier.top();
         frontier.pop();
@@ -345,12 +342,6 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
             std::vector<Point> path;
             path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
             while(act_index != 3){
-                for (int dx = -3; dx <= 3; dx++)
-                    for (int dy = -3; dy <= 3; dy++)
-                        if(grid[x_path+dx][y_path+dy] <= 1){
-                            // std::cout << "wall in path" << std::endl;
-                            continue;
-                        }
                 if(act_index > grid[x_path][y_path+1] && grid[x_path][y_path+1] >=2 && grid[x_path][y_path+2] >= 2){
                     y_path = y_path + 1;
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
@@ -385,13 +376,12 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
                 int newY = current.y + dy;
 
                 // Check for valid neighbors within grid bounds and not walls
-                if (newX >= 0 && newX < cols && newY >= 0 && newY < rows && grid[newX][newY] != 1 && !visited[newX][newY]) {
-                    visited[newX][newY] = true;
+                if (newX >= 0 && newX < cols && newY >= 0 && newY < rows && grid[newX][newY] == 0) {
+        
                     PointQueue neighbor = {newX, newY, current.distance + 1}; // Increment distance
                     frontier.push(neighbor);
                     
-                    grid = map.get_hash_map();
-                    
+                    // grid = map.get_hash_map();
                     lowest_index = 3;
                     for (int dxx = -1; dxx <= 1; dxx++) {
                         for (int dyy = -1; dyy <= 1; dyy++) {
@@ -407,19 +397,12 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
                             }
                         }
                     }
-                    // std::cout << newX << " " << newY << " " << lowest_index << map.get_coordinates()[newX][newY].getX() << " " << map.get_coordinates()[newX][newY].getY() <<  std::endl;
-                    // map.update_map(Point(map.get_coordinates()[newX][newY].getX(), map.get_coordinates()[newX][newY].getY(), 0), current.distance + 1);
-
                     map.update_map(Point(map.get_coordinates()[newX][newY].getX(), map.get_coordinates()[newX][newY].getY(), 0), lowest_index);
-                    // std::cout << newX << " " << newY << " " << lowest_index << std::endl;
-                    
+                    grid[newX][newY] = lowest_index;
                 }
             }
         }
-        // print_map();
     }
-
-    // No path found
     return {};
 }
 
