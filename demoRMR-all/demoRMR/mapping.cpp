@@ -230,54 +230,32 @@ std::vector<Point> Mapping::flood_fill(Point start, Point goal) {
     int ind_goal_x, ind_goal_y;   
     
     map.update_map(Point(goal.getX(),goal.getY(),goal.getTheta()), 2);
-    
+
     int x = goal.getX();
     int y = goal.getY();
 
-    for (size_t i = 0; i < map.get_map_dimension(); i++)
-    {
-        if (map.get_coordinates()[i][0].getX() <= x && map.get_coordinates()[i + 1][0].getX() > x)
-        {
-            std::cout << map.get_coordinates()[i][0].getX() << " " << map.get_coordinates()[i + 1][0].getX() << std::endl;
-            ind_goal_x = i;
-            break;
-        }
-    }
-    for(size_t j = 0; j < map.get_map_dimension(); j++)
-    {
-        if (map.get_coordinates()[0][j].getY() <= y && map.get_coordinates()[0][j + 1].getY() > y)
-        {
-               // std::cout << map.get_coordinates()[0][j].getY() << " " << map.get_coordinates()[0][j + 1].getY() << std::endl;
-            ind_goal_y = j;
-            break;
-        }
-    }
-    x = start.getX();
-    y = start.getY();
-    for (size_t i = 0; i < map.get_map_dimension(); i++)
-    {
-        if (map.get_coordinates()[i][0].getX() <= x && map.get_coordinates()[i + 1][0].getX() > x)
-        {
-            ind_start_x = i;
-            break;
-        }
-    }
-    for(size_t j = 0; j < map.get_map_dimension(); j++)
-    {
-        if (map.get_coordinates()[0][j].getY() <= y && map.get_coordinates()[0][j + 1].getY() > y)
-        {
-            ind_start_y = j;
-            break;
-        }
-    }
+    double min_x = map.get_coordinates()[0][0].getX();
+    double min_y = map.get_coordinates()[0][0].getY();
+    double dxxx = map.get_coordinates()[1][0].getX() - min_x;
+    double dyyy = map.get_coordinates()[0][1].getY() - min_y;
+
+    // dakedy boli tu fory ne 
+    ind_start_x = static_cast<int>((start.getX() - min_x) / dxxx);
+    ind_start_y = static_cast<int>((start.getY() - min_y) / dyyy);
+    ind_goal_x = static_cast<int>((goal.getX() - min_x) / dxxx);
+    ind_goal_y = static_cast<int>((goal.getY() - min_y) / dyyy);
+
     std::cout << "Point coord" << start.getX() << " " << start.getY() << " " << goal.getX() << " " << goal.getY() << std::endl;
     std::cout << "ind_start_x " << ind_start_x << " ind_start_y " << ind_start_y << " ind_goal_x " << ind_goal_x << " ind_goal_y " << ind_goal_y << std::endl;
+    std::cout << "ind_start_xx " << ind_start_xx << " ind_start_yy " << ind_start_yy << " ind_goal_xx " << ind_goal_xx << " ind_goal_yy " << ind_goal_yy << std::endl;
     std::cout << "Map ind " << map.get_coordinates()[ind_start_x][ind_start_y].getX() << " " << map.get_coordinates()[ind_start_x][ind_start_y].getY() << " " << map.get_coordinates()[ind_goal_x][ind_goal_y].getX() << " " << map.get_coordinates()[ind_goal_x][ind_goal_y].getY() << std::endl; 
     
     std::vector<Point> path = floodFillPathfind(ind_start_x, ind_start_y, ind_goal_x, ind_goal_y);
+
     std::vector<Point> filteredPath;
+
     int prev_shiftX = 0, prev_shiftY = 0;
-    int shift_bruh = 100;
+
     bool sameX = false, sameY = false;
     for(size_t i = 0; i < path.size(); i++){
         if(path[i].getX() == path[i+1].getX() && !sameY)
