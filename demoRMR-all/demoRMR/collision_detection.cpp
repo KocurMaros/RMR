@@ -1,5 +1,4 @@
 #include "collision_detection.h"
-#define PI          3.14159 /* pi */
 #include<iostream>
 
 bool CollisionDetection::isObstacleInPathStatic(double scanDistance, double scanAngle, double zoneAngle, double zoneDistance){

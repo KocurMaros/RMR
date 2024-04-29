@@ -1,6 +1,7 @@
 #ifndef WALL_FOLLOWING_H
 #define WALL_FOLLOWING_H
 #include <rplidar.h>
+#include "point.h"
 #include "collision_detection.h"
 #define WALL_FOLLOWING_VELOCITY 300 //mm/s
 #define WALL_DISTANCE 0.1 //m
@@ -12,7 +13,11 @@ public:
     void setLaserData(LaserMeasurement laser_data) {this->laser_data = laser_data;}
     double getDesiredAnglePerpencidular() {return this->desired_angle_perpencidular;}
     bool isRotatedPerpendicularly() {return this->is_rotated_perpendicularly;}
-    void findWall(double robotFi);
+    bool isNearWall() {return this->is_near_wall;}
+    void setNearWall(bool is_near_wall) {this->is_near_wall = is_near_wall;}
+    Point* getPoint()  {return &first_point;}
+    void setPoint(Point point) {this->first_point = point;}
+    void findWall(double robotFi, double robotX, double robotY);
     void computeDistancesToWall();
     void computeVelocities();
     void computeRotationVelocity();
@@ -24,10 +29,13 @@ private:
     void computeDistanceFront();
     void setDistanceFlags();
     void calculateDesiredAngle();
+    void computeFirstPoint(double robotFi, double robotX, double robotY);
     LaserMeasurement laser_data;
+    Point first_point;
     double desired_angle_perpencidular;
     double lidar_min;
     double wall_angle;
+    double wall_distance;
     double front_distance;
     double left_distance;
     double right_distance;
@@ -36,6 +44,7 @@ private:
     // wall by v tomto pripade mala byt najdena vzdy preto to nepouzivam
     // bool wall_found;
     bool is_rotated_perpendicularly;
+    bool is_near_wall;
     //TODO: sharp angle...
     bool rotate_only;
     //TODO: both sides wall following

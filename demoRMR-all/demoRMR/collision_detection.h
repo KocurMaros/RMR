@@ -1,6 +1,7 @@
 #ifndef COLLISION_DETECTION_H
 #define COLLISION_DETECTION_H
 #define CRITICAL_DISTANCE 0.2 //[m]
+#define PI          3.14159 /* pi */
 #include <math.h>
 #include <rplidar.h>
 #include "point.h"

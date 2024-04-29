@@ -405,9 +405,27 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             if (wall_following){
                 wall_following_object.setLaserData(copyOfLaserData);
                 if (wall_following_first_run){
-                    wall_following_object.findWall(robotFi);
+                    wall_following_object.findWall(robotFi,robotX,robotY);
+                    controller->clearIntegral();
+                    robot.setTranslationSpeed(0); //??? ozaj chcem zastavit?
+                    controller->ramp.clear_time_hard();
                     wall_following_first_run = false;
                     return 0;
+                }
+                //TODO: dostan sa na minimum, cca 30 cm od steny
+                if (!wall_following_object.isNearWall()){
+                    controller->compute(*actual_point,*wall_following_object.getPoint(),(double)1/40, &trans_speed, &rot_speed);
+
+                    if(abs(controller->error_distance) < WITHIN_TOLERANCE){
+                        controller->clearIntegral();
+                        controller->ramp.clear_time_hard();
+                        collision_detection.resetCollisionDetection();
+                        obstacle_point_set = false;
+                        wall_following_object.setNearWall(true);
+                        return 0;
+                    }
+
+                    goto jump; //very ugly... find different approach if you have more time
                 }
                 if (!wall_following_object.isRotatedPerpendicularly()){
                     wall_following_object.checkIsRotatedPerpendicularly(robotFi);
@@ -415,14 +433,15 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                         robot.setRotationSpeed(0);
                         return 0;
                     }
+                    //TODO: rampa
                     rot_speed = wall_following_object.getDesiredAnglePerpencidular()-robotFi;
                     if (rot_speed >= 180) rot_speed -= 2*180;
                     else if (rot_speed < -180) rot_speed += 2*180;
                     robot.setRotationSpeed(2*rot_speed*PI/180);
                     return 0;
                 }
-                //TODO: natocit sa kolmo na stenu
-                // daco
+                //TODO: ak sa vzdialenost zmensi a vidim na ciel konci
+                //ak ne tak rob wall following
             }
             else {
 
@@ -556,7 +575,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     }
                 }
 
-
+            jump:
 
                 if (abs(controller->error_angle) >= PI/4 && !rot_only){
                     //ak je uhol moc velky nastavi sa flag na rotaciu na mieste
