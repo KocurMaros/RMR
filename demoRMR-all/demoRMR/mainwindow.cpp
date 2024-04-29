@@ -8,7 +8,7 @@
 #define WHEELRADIUS 0.035
 #define TICKTOMETER 0.000085292090497737556558
 #define TICKTORAD 0.002436916871363930187454
-#define ENCODEROVERFLOW 65536
+#define ENCODEROVERFLOW 65535 //dumbass :O
 
 #define WITHIN_TOLERANCE 30
 #define WITHIN_TOLERANCE_THETA 0.0174533
@@ -64,10 +64,12 @@ MainWindow::MainWindow(QWidget *parent) :
     right_point_distance = 0;
     left_point_angle = 0;
     right_point_angle = 0;
+    obstacle_point_set = false;
     collision_detection.getObstacle()->setFoundObstacle(false);
 
     wall_following = false;
     test_collision = false;
+    shortest_distance_to_goal = 10000000;
 }
 
 MainWindow::~MainWindow()
@@ -391,6 +393,25 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             }
             //toto vzdy nastavi ciel, ak je vo vektore bodov aspon jeden bod
             controller->computeErrors(*actual_point,*desired_point);
+            current_distance_to_goal = controller->error_distance;
+
+            // TODO: if (wall_following) ..., else: tato srandicka
+            // prvykrat najdes minimum, ked bolo po lavej strane od teba followujes stenu vlavo, inak v pravo...
+            // ked najdes to minimum tak vypocias bod kam sa ma dostat a natocis sa 90 stupnov vpravo/vlavo, vynulujes flag na first_wall alebo tak
+
+
+            //TODO: threshold for shortest distance
+            if (current_distance_to_goal < shortest_distance_to_goal){
+                shortest_distance_to_goal = current_distance_to_goal;
+            }
+            else {
+                //TODO: logic for wall following
+                // wall_following = true;
+                // return 0;
+            }
+
+            //TODO: ak je prejazdovy bod true, tak do controllera pacni ten, ak ne tak pacni aktualny
+
 
             //checknut ci sa da ist na cielovy bod a ci neni wall following
             //ak ano chod na ciel
@@ -400,10 +421,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             //ked je pred tebou prekazka a nie si vo wall followingu, smeruj na jej hranu, zapamataj si aktualnu vzdialenost od ciela
             //checkuj si vzdialenost, ak sa zacne niekedy zvacsovat prepni sa na sledovanie steny
 
-            controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
             //check if the path is right
-
-
 
             if (!collision_detection.getObstacle()->isFoundObstacle()){
                 // std::cout<< "Obstacle: " << collision_detection.getObstacle()->isFoundObstacle() << std::endl;
@@ -418,7 +436,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                         if (!checkLeftEdgePointObstacle()){
                             // std::cout << "there is no obstacle brother" << std::endl;
                             collision_detection.getObstacle()->getLeftEdge()->setPointFree(true);
-                            collision_detection.getObstacle()->getLeftEdge()->setDistanceToGoal(calculateDistanceToGoal(actual_point,&goal_point,collision_detection.getObstacle()->getLeftEdge()->getPoint()));
+                            collision_detection.getObstacle()->getLeftEdge()->setDistanceToGoal(calculateDistanceToGoal(actual_point,desired_point,collision_detection.getObstacle()->getLeftEdge()->getPoint()));
                         }
                         else{
                             collision_detection.getObstacle()->getLeftEdge()->setPointFree(false);
@@ -432,7 +450,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                         if (!checkRightEdgePointObstacle()){
                             // std::cout << "there is no obstacle brother2" << std::endl;
                             collision_detection.getObstacle()->getRightEdge()->setPointFree(true);
-                            collision_detection.getObstacle()->getRightEdge()->setDistanceToGoal(calculateDistanceToGoal(actual_point,&goal_point,collision_detection.getObstacle()->getRightEdge()->getPoint()));
+                            collision_detection.getObstacle()->getRightEdge()->setDistanceToGoal(calculateDistanceToGoal(actual_point,desired_point,collision_detection.getObstacle()->getRightEdge()->getPoint()));
                         }
                         else{
                             collision_detection.getObstacle()->getRightEdge()->setPointFree(false);
@@ -442,32 +460,33 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     if(collision_detection.getObstacle()->getRightEdge()->isPointFree() && collision_detection.getObstacle()->getLeftEdge()->isPointFree()){
                         if(collision_detection.getObstacle()->getRightEdge()->getDistanceToGoal() < collision_detection.getObstacle()->getLeftEdge()->getDistanceToGoal()){
                             //set right point
-                            addPointAtStart(*collision_detection.getObstacle()->getRightEdge()->getPoint());
+                            obstacle_avoidance_point = *collision_detection.getObstacle()->getRightEdge()->getPoint();
+                            obstacle_point_set = true;
                         }
                         else {
                             //set left point
-                            addPointAtStart(*collision_detection.getObstacle()->getLeftEdge()->getPoint());
+                            obstacle_avoidance_point = *collision_detection.getObstacle()->getLeftEdge()->getPoint();
+                            obstacle_point_set = true;
                         }
-                        // collision_detection.resetCollisionDetection();
+                        collision_detection.resetCollisionDetection();
                     }
                     else if(collision_detection.getObstacle()->getLeftEdge()->isPointFree()){
-                        addPointAtStart(*collision_detection.getObstacle()->getLeftEdge()->getPoint());
-                        // collision_detection.resetCollisionDetection();
+                        //set left point
+                        obstacle_avoidance_point = *collision_detection.getObstacle()->getLeftEdge()->getPoint();
+                        obstacle_point_set = true;
+                        collision_detection.resetCollisionDetection();
                     }
                     else if(collision_detection.getObstacle()->getRightEdge()->isPointFree()){
-                        addPointAtStart(*collision_detection.getObstacle()->getRightEdge()->getPoint());
-                        // collision_detection.resetCollisionDetection();
+                        //set right point
+                        obstacle_avoidance_point = *collision_detection.getObstacle()->getRightEdge()->getPoint();
+                        obstacle_point_set = true;
+                        collision_detection.resetCollisionDetection();
                     }
                     else {
-                        //follow wall TODO:
+                        // follow wall TODO:
                     }
 
 
-                    goal_point.setPoint(desired_point->getX(),desired_point->getY(),desired_point->getTheta());
-                    current_distance_to_goal = calculateDistanceToGoal(actual_point,desired_point);
-                    shortest_distance_to_goal = current_distance_to_goal;
-
-                    //zapamatat si vzdialenost od prekazky?
                     //ak sa najde iba jeden edge - > nastavit ciel na edge
                     //ak sa najdu oba edges -> porovnat vzdialenosti a nastavit ciel na ten ktory je blizsie
 
@@ -483,7 +502,9 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 // return 0;
             }
 
-            if (test_collision){
+            // if (test_collision){
+
+            controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
 
 
             if(abs(controller->error_distance) < WITHIN_TOLERANCE){
@@ -512,30 +533,22 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             if (rot_only){
                 //ROTATION
                 robot.setRotationSpeed(rot_speed);
-            // }
-            // else if(abs(rot_speed) < PI/180){
-            //     robot.setTranslationSpeed(trans_speed);
-                // std::cout<< "TRANSLATION" << std::endl;
-                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << std::endl;
+
             }else{
-                // if(rot_speed == 0){
-                //     rot_speed = 0.0001;
-                // }
+                //ARC
                 radius = trans_speed/rot_speed;
                 if(radius > 32767)
                     radius = 32767;
                 else if(radius < -32767)
                     radius = -32767;
                 robot.setArcSpeed(trans_speed,radius);
-                // std::cout<< "ARC" << std::endl;
-                // std::cout<< "transSpeed: " << trans_speed << " rotSpeed: " << rot_speed << " radius: " << radius << std::endl;
             }
             if (rot_only && abs(controller->error_angle)<=4*PI/180){
                 rot_only = false;
                 controller->ramp.clear_time_hard();
                 controller->clearIntegral();
             }
-        }
+        // }
 
         }
 
@@ -725,7 +738,7 @@ bool MainWindow::checkRightEdgePointObstacle(){
     std::cout << "angle: " << angle/PI*180 << " distance: " << distance << std::endl;
     return isThereObstacleInZoneStatic(angle/PI*180,distance);}
 
-double MainWindow::calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, Point *goalPoint, Point *midPoint){
+double MainWindow::calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, std::shared_ptr<Point> goalPoint, Point *midPoint){
     double first_distance = sqrt(pow(currentPoint->getX()-midPoint->getX(), 2) + pow(currentPoint->getY()-midPoint->getY(), 2));
     double second_distance = sqrt(pow(midPoint->getX()-goalPoint->getX(), 2) + pow(midPoint->getY()-goalPoint->getY(), 2));
     return first_distance+second_distance;

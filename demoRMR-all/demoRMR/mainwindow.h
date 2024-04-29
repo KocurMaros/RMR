@@ -111,9 +111,10 @@ private:
     std::shared_ptr<Point> actual_point;
     std::shared_ptr<Point> set_point;
     std::shared_ptr<Point> desired_point;
-    Point goal_point;
+    Point obstacle_avoidance_point;
+    bool obstacle_point_set;
     CollisionDetection collision_detection;
-    double calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, Point *goalPoint, Point *midPoint);
+    double calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, std::shared_ptr<Point> goalPoint, Point *midPoint);
     double calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, std::shared_ptr<Point> goalPoint);
 
 
