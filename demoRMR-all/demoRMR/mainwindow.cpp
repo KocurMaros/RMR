@@ -43,7 +43,8 @@ MainWindow::MainWindow(QWidget *parent) :
     actual_point = make_shared<Point>(0,0,0);
     set_point = make_shared<Point>(0,0,0);
     desired_point = make_shared<Point>(0,0,0);
-    
+    obstacle_avoidance_point = make_shared<Point>(0,0,0);
+
     robotX = 0;
     robotY = 0;
     robotFi = 0;
@@ -394,6 +395,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             //toto vzdy nastavi ciel, ak je vo vektore bodov aspon jeden bod
             controller->computeErrors(*actual_point,*desired_point);
             current_distance_to_goal = controller->error_distance;
+            std::cout << "computing errors " << std::endl;
 
             // TODO: if (wall_following) ..., else: tato srandicka
             // prvykrat najdes minimum, ked bolo po lavej strane od teba followujes stenu vlavo, inak v pravo...
@@ -411,7 +413,9 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             }
 
             //TODO: ak je prejazdovy bod true, tak do controllera pacni ten, ak ne tak pacni aktualny
-
+            if (obstacle_point_set){
+                controller->computeErrors(*actual_point,*obstacle_avoidance_point);
+            }
 
             //checknut ci sa da ist na cielovy bod a ci neni wall following
             //ak ano chod na ciel
@@ -445,7 +449,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
                     findEdgeRight();
                     if(collision_detection.getObstacle()->getRightEdge()->isFoundEdge()){
-                        // std::cout << "Obstacle right edge has been found!" << std::endl;
+                        std::cout << "Obstacle right edge has been found!" << std::endl;
                         collision_detection.getObstacle()->calculateRightEdgePoint(robotX,robotY,robotFi);
                         if (!checkRightEdgePointObstacle()){
                             // std::cout << "there is no obstacle brother2" << std::endl;
@@ -460,65 +464,69 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     if(collision_detection.getObstacle()->getRightEdge()->isPointFree() && collision_detection.getObstacle()->getLeftEdge()->isPointFree()){
                         if(collision_detection.getObstacle()->getRightEdge()->getDistanceToGoal() < collision_detection.getObstacle()->getLeftEdge()->getDistanceToGoal()){
                             //set right point
-                            obstacle_avoidance_point = *collision_detection.getObstacle()->getRightEdge()->getPoint();
+                            obstacle_avoidance_point->setPoint(collision_detection.getObstacle()->getRightEdge()->getPoint());
                             obstacle_point_set = true;
                         }
                         else {
                             //set left point
-                            obstacle_avoidance_point = *collision_detection.getObstacle()->getLeftEdge()->getPoint();
+                            obstacle_avoidance_point->setPoint(collision_detection.getObstacle()->getLeftEdge()->getPoint());
                             obstacle_point_set = true;
                         }
                         collision_detection.resetCollisionDetection();
                     }
                     else if(collision_detection.getObstacle()->getLeftEdge()->isPointFree()){
                         //set left point
-                        obstacle_avoidance_point = *collision_detection.getObstacle()->getLeftEdge()->getPoint();
+                        obstacle_avoidance_point->setPoint(collision_detection.getObstacle()->getLeftEdge()->getPoint());
                         obstacle_point_set = true;
                         collision_detection.resetCollisionDetection();
                     }
                     else if(collision_detection.getObstacle()->getRightEdge()->isPointFree()){
                         //set right point
-                        obstacle_avoidance_point = *collision_detection.getObstacle()->getRightEdge()->getPoint();
+                        obstacle_avoidance_point->setPoint(collision_detection.getObstacle()->getRightEdge()->getPoint());
                         obstacle_point_set = true;
                         collision_detection.resetCollisionDetection();
                     }
                     else {
                         // follow wall TODO:
                     }
-
-
-                    //ak sa najde iba jeden edge - > nastavit ciel na edge
-                    //ak sa najdu oba edges -> porovnat vzdialenosti a nastavit ciel na ten ktory je blizsie
-
-                    //ak sa nenajde edge -> sleduj stenu TODO:
-
-                    //nastavi novy bod i guess?
+                    std::cout << "finished this checking" << std::endl;
                     return 0;
                 }
-
             }
             else{
                 //TODO: ?
-                // return 0;
-            }
-
-            // if (test_collision){
-
-            controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
-
-
-            if(abs(controller->error_distance) < WITHIN_TOLERANCE){
-                controller->clearIntegral();
-                robot.setTranslationSpeed(0);
-                test_collision = false;
-                controller->ramp.clear_time_hard();
-                if (!points_vector.empty()){
-                    //toto asi nemusi byt v ife - just to be sure
-                    points_vector.erase(points_vector.begin());
-                }
-                std::cout << "clear integral" << std::endl;
                 return 0;
             }
+
+            if (!obstacle_point_set){
+                controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
+
+                if(abs(controller->error_distance) < WITHIN_TOLERANCE){
+                    controller->clearIntegral();
+                    robot.setTranslationSpeed(0);
+                    controller->ramp.clear_time_hard();
+                    collision_detection.resetCollisionDetection();
+                    if (!points_vector.empty()){
+                        //toto asi nemusi byt v ife - just to be sure
+                        points_vector.erase(points_vector.begin());
+                    }
+                    std::cout << "clear integral" << std::endl;
+                    return 0;
+                }
+            }
+            else {
+                controller->compute(*actual_point,*obstacle_avoidance_point,(double)1/40, &trans_speed, &rot_speed);
+
+                if(abs(controller->error_distance) < WITHIN_TOLERANCE){
+                    controller->clearIntegral();
+                    controller->ramp.clear_time_hard();
+                    collision_detection.resetCollisionDetection();
+                    obstacle_point_set = false;
+                    return 0;
+                }
+            }
+
+
 
             if (abs(controller->error_angle) >= PI/4 && !rot_only){
                 //ak je uhol moc velky nastavi sa flag na rotaciu na mieste
@@ -548,9 +556,10 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 controller->ramp.clear_time_hard();
                 controller->clearIntegral();
             }
-        // }
 
-        }
+
+
+        } //if bruh koniec
 
         ///toto neodporucam na nejake komplikovane struktury.signal slot robi kopiu dat. radsej vtedy posielajte
         /// prazdny signal a slot bude vykreslovat strukturu (vtedy ju musite mat samozrejme ako member premmennu v mainwindow.ak u niekoho najdem globalnu premennu,tak bude cistit bludisko zubnou kefkou.. kefku dodam)
@@ -697,7 +706,7 @@ void MainWindow::findEdgeRight(){
             collision_detection.getObstacle()->getRightEdge()->setDistance(prev_distance);
             collision_detection.getObstacle()->getRightEdge()->setAngle(prev_angle);
             collision_detection.getObstacle()->getRightEdge()->setFoundEdge(true);
-            // std::cout << "RIGHT EDGE FOUND" << std::endl;
+            std::cout << "RIGHT EDGE FOUND" << std::endl;
             break;
         }
 
