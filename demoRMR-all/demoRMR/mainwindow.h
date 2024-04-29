@@ -31,6 +31,7 @@
 #include "controller.h"
 #include "point.h"
 #include "ramp.h"
+#include "wall_following.h"
 
 typedef struct
 {
@@ -117,6 +118,7 @@ private:
     double calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, std::shared_ptr<Point> goalPoint, Point *midPoint);
     double calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, std::shared_ptr<Point> goalPoint);
 
+    WallFollowing wall_following_object;
 
     std::vector<Point> points_vector;
     //vektor bude mat v sebe body, ktore, ked ich budes pridavat manualne tak sa pridaju appendom nakoniec
@@ -170,6 +172,7 @@ private:
     double right_point_angle;
 
     bool wall_following;
+    bool wall_following_first_run;
 
 public slots:
      void setUiValues(double robotX,double robotY,double robotFi);

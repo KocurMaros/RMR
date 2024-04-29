@@ -84,12 +84,14 @@ SOURCES += main.cpp\
         collision_detection.cpp \
         mainwindow.cpp\
         controller.cpp\
-        ramp.cpp
+        ramp.cpp \
+        wall_following.cpp
 
 HEADERS  += mainwindow.h\
         collision_detection.h \
         point.h\
         controller.h\
-        ramp.h
+        ramp.h \
+        wall_following.h
 
 FORMS    += mainwindow.ui
