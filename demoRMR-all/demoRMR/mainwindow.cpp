@@ -395,7 +395,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             //toto vzdy nastavi ciel, ak je vo vektore bodov aspon jeden bod
             controller->computeErrors(*actual_point,*desired_point);
             current_distance_to_goal = controller->error_distance;
-            std::cout << "computing errors " << std::endl;
 
             // TODO: if (wall_following) ..., else: tato srandicka
             // prvykrat najdes minimum, ked bolo po lavej strane od teba followujes stenu vlavo, inak v pravo...
@@ -435,7 +434,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     findEdgeLeft();
 
                     if(collision_detection.getObstacle()->getLeftEdge()->isFoundEdge()){
-                        std::cout << "Obstacle left edge has been found!" << std::endl;
+                        // std::cout << "Obstacle left edge has been found!" << std::endl;
                         collision_detection.getObstacle()->calculateLeftEdgePoint(robotX,robotY,robotFi);
                         if (!checkLeftEdgePointObstacle()){
                             // std::cout << "there is no obstacle brother" << std::endl;
@@ -449,7 +448,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
 
                     findEdgeRight();
                     if(collision_detection.getObstacle()->getRightEdge()->isFoundEdge()){
-                        std::cout << "Obstacle right edge has been found!" << std::endl;
+                        // std::cout << "Obstacle right edge has been found!" << std::endl;
                         collision_detection.getObstacle()->calculateRightEdgePoint(robotX,robotY,robotFi);
                         if (!checkRightEdgePointObstacle()){
                             // std::cout << "there is no obstacle brother2" << std::endl;
@@ -505,6 +504,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     controller->clearIntegral();
                     robot.setTranslationSpeed(0);
                     controller->ramp.clear_time_hard();
+                    obstacle_point_set = false;
                     collision_detection.resetCollisionDetection();
                     if (!points_vector.empty()){
                         //toto asi nemusi byt v ife - just to be sure
@@ -532,6 +532,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 //ak je uhol moc velky nastavi sa flag na rotaciu na mieste
                 rot_only = true;
                 controller->ramp.clear_time_hard();
+                collision_detection.resetCollisionDetection();
                 controller->clearIntegral();
                 std::cout << "ONLY ROT: " << controller->error_angle << std::endl;
                 std::cout << "Actual Theta: " << actual_point->getTheta() << std::endl;
@@ -629,7 +630,7 @@ double MainWindow::angDiff(double alpha, double beta) {
     diff = fmod(diff + 180, 360);
     if (diff < 0)
         diff += 360;
-    diff -= 180;
+    // diff -= 180;
     return fabs(diff);
 }
 
@@ -672,9 +673,10 @@ void MainWindow::findEdgeLeft(){
         prev_angle = lidar_angle;
 
         angle_difference = angDiff(obstacle_angle, lidar_angle);
-        // std::cout << "angle_difference: " << angle_difference << std::endl;
+        std::cout << "angle_difference: " << angle_difference << std::endl;
         lidar_index--;
     }
+    std::cout << "left edge not found" << std::endl;
 }
 
 void MainWindow::findEdgeRight(){
@@ -690,7 +692,7 @@ void MainWindow::findEdgeRight(){
     //distance je v metroch
     double obstacle_angle = collision_detection.getObstacle()->getAngle();
 
-    // std::cout << "CHECKING RIGHT EDGE" << std::endl;
+    std::cout << "CHECKING RIGHT EDGE" << std::endl;
 
     while(angle_difference < 180){
         if(lidar_index > (collision_detection.getLaserData().numberOfScans - 1)){
