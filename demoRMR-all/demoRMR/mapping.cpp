@@ -284,19 +284,21 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
     int rows = map.get_map_dimension();
     int cols = map.get_map_dimension();
 
-    std::priority_queue<PointQueue> frontier;
 
-    PointQueue start = {goalX, goalY, 0};
+    std::queue<Point> frontier;
+
+    Point start = Point(goalX, goalY, 0);
     frontier.push(start);
     while (!frontier.empty()) {
-        PointQueue current = frontier.top();
+        
+        Point current = frontier.front();
         frontier.pop();
 
-        if (current.x == startX && current.y == startY) {
+        if (current.getX() == startX && current.getY() == startY) {
             print_map();
             uint16_t act_index;
-            int x_path = current.x;
-            int y_path = current.y;
+            int x_path = current.getX();
+            int y_path = current.getY();
             grid = map.get_hash_map();
             act_index = grid[x_path][y_path];
             std::vector<Point> path;
@@ -328,8 +330,8 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
                 if(abs(dy) == abs(dx)){
                     continue;
                 }
-                int newX = current.x + dx;
-                int newY = current.y + dy;
+                int newX = current.getX() + dx;
+                int newY = current.getY() + dy;
                 // X 0 X
                 // 0 2 0
                 // X 0 X
@@ -340,7 +342,7 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
                     // 0 2 0
                     // X 0 X
                     //pick 1 point from 4 points
-                    PointQueue neighbor = {newX, newY, current.distance + 1}; // Increment distance
+                    Point neighbor = Point(newX, newY, 0); // Increment distance
                     frontier.push(neighbor);
                     // X 0 4 0 X
                     // 0 4 3 4 0
@@ -350,7 +352,7 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
                     // A represent actual picked neighbor and check lower index from 4 neighbors  << that was before
 
                     // next index is my index + 1
-                    next_index = grid[current.x][current.y]+1;
+                    next_index = grid[current.getX()][current.getY()]+1;
                     map.update_map(Point(map.get_coordinates()[newX][newY].getX(), map.get_coordinates()[newX][newY].getY(), 0), next_index);
                     grid[newX][newY] = next_index;
                 }
