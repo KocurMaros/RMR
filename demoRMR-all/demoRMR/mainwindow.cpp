@@ -673,12 +673,14 @@ bool MainWindow::isThereObstacleInZone(double zoneAngle, double zoneDistance) {
 
 double MainWindow::angDiff(double alpha, double beta) {
     double diff = beta - alpha;
-    // Normalize the difference
-    diff = fmod(diff + 180, 360);
-    if (diff < 0)
-        diff += 360;
-    // diff -= 180;
-    return fabs(diff);
+    // Normalize the difference to [-360, 360)
+    diff = fmod(diff, 360);
+    if (diff > 180) {
+        diff -= 360;  // Adjust values that fall in the (180, 360) range
+    } else if (diff <= -180) {
+        diff += 360;  // Adjust values that fall in the (-360, -180] range
+    }
+    return abs(diff);
 }
 
 
@@ -698,7 +700,7 @@ void MainWindow::findEdgeLeft(){
 
     std::cout << "CHECKING LEFT EDGE" << std::endl;
 
-    while(angle_difference < 180){
+    while(angle_difference < 178){
         if(lidar_index < 0){
             lidar_index = collision_detection.getLaserData().numberOfScans - 1;
         }
@@ -741,7 +743,8 @@ void MainWindow::findEdgeRight(){
 
     std::cout << "CHECKING RIGHT EDGE" << std::endl;
 
-    while(angle_difference < 180){
+    //temporary fi (ma to byt < 180), treba opravit funkciu angDiff
+    while(angle_difference < 178){
         if(lidar_index > (collision_detection.getLaserData().numberOfScans - 1)){
             lidar_index = 0;
         }
@@ -763,6 +766,7 @@ void MainWindow::findEdgeRight(){
         prev_angle = lidar_angle;
 
         angle_difference = angDiff(obstacle_angle, lidar_angle);
+        std::cout << "angle_difference: " << angle_difference << std::endl;
         lidar_index++;
     }
 }
