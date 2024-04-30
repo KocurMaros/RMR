@@ -1,0 +1,25 @@
+{
+	"BUILD_DIR" : "/home/laptop/school/RMR/demoRMR-all/build_sim/QJoysticks-master/qjoysticks_autogen",
+	"CMAKE_BINARY_DIR" : "/home/laptop/school/RMR/demoRMR-all/build_sim",
+	"CMAKE_CURRENT_BINARY_DIR" : "/home/laptop/school/RMR/demoRMR-all/build_sim/QJoysticks-master",
+	"CMAKE_CURRENT_SOURCE_DIR" : "/home/laptop/school/RMR/demoRMR-all/QJoysticks-master",
+	"CMAKE_SOURCE_DIR" : "/home/laptop/school/RMR/demoRMR-all",
+	"INCLUDE_DIR" : "/home/laptop/school/RMR/demoRMR-all/build_sim/QJoysticks-master/qjoysticks_autogen/include",
+	"INPUTS" : 
+	[
+		"/home/laptop/school/RMR/demoRMR-all/QJoysticks-master/etc/resources/SDL/Database.txt",
+		"/home/laptop/school/RMR/demoRMR-all/QJoysticks-master/etc/resources/SDL/GenericMappings/Windows.txt",
+		"/home/laptop/school/RMR/demoRMR-all/QJoysticks-master/etc/resources/SDL/GenericMappings/Linux.txt",
+		"/home/laptop/school/RMR/demoRMR-all/QJoysticks-master/etc/resources/SDL/GenericMappings/OSX.txt"
+	],
+	"LOCK_FILE" : "/home/laptop/school/RMR/demoRMR-all/build_sim/QJoysticks-master/CMakeFiles/qjoysticks_autogen.dir/AutoRcc_qjoysticks-res_OICXTEDBQS_Lock.lock",
+	"MULTI_CONFIG" : false,
+	"OPTIONS" : [ "-name", "qjoysticks_res" ],
+	"OUTPUT_CHECKSUM" : "OICXTEDBQS",
+	"OUTPUT_NAME" : "qrc_qjoysticks-res.cpp",
+	"RCC_EXECUTABLE" : "/usr/lib/qt5/bin/rcc",
+	"RCC_LIST_OPTIONS" : [ "--list" ],
+	"SETTINGS_FILE" : "/home/laptop/school/RMR/demoRMR-all/build_sim/QJoysticks-master/CMakeFiles/qjoysticks_autogen.dir/AutoRcc_qjoysticks-res_OICXTEDBQS_Used.txt",
+	"SOURCE" : "/home/laptop/school/RMR/demoRMR-all/QJoysticks-master/etc/resources/qjoysticks-res.qrc",
+	"VERBOSITY" : 0
+}

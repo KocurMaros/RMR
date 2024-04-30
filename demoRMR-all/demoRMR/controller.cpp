@@ -1,4 +1,5 @@
 #include "controller.h"
+#define PI          3.14159 /* pi */
 
 // Implement your controller functions here
 PIController::PIController(double kp, double ki, double kp_rot) : kp_(kp), ki_(ki),kp_rot_(kp_rot), integral_(0.0) {
@@ -8,7 +9,7 @@ PIController::PIController(double kp, double ki, double kp_rot) : kp_(kp), ki_(k
 PIController::~PIController() {}
 
 
-void PIController::compute(Point actual_point, Point desired_point, double dt_, int *trans_speed, int *rot_speed) {
+void PIController::compute(Point actual_point, Point desired_point, double dt_, int *trans_speed, double *rot_speed) {
     
     double actual_x, actual_y, actual_theta;
     double desired_x, desired_y, desired_theta;
@@ -20,14 +21,25 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
     desired_theta = desired_point.getTheta();
 
 
-    double error_distance = sqrt(pow(desired_x - actual_x, 2) + pow(desired_y - actual_y, 2));
-    double error_angle = atan2(desired_y - actual_y, desired_x - actual_x) - actual_theta;
+    error_distance = sqrt(pow(desired_x - actual_x, 2) + pow(desired_y - actual_y, 2));
+    error_angle = atan2(desired_y - actual_y, desired_x - actual_x);
+    // std::cout << "atan2 = " << error_angle << std::endl;
+    error_angle = error_angle - actual_theta;
+    //  std::cout << "actual = " << actual_theta <<" error "<<error_angle<< std::endl;
     // double error_angle = atan2(desired_.y - actual_.y, desired_.x - actual_.x);
 
+    if (error_angle > PI) {
+        error_angle -= 2 * PI;
+    } else if (error_angle <= -PI) {
+        error_angle += 2 * PI;
+    }
+    // std::cout << "error angle = " << error_angle << std::endl;
     integral_ = integral_ + error_distance*dt_;
 
-    double omega = kp_*error_distance + ki_*integral_;
+    double omega = kp_*error_distance/* + ki_*integral_*/;
     double omega_rot = kp_rot_*error_angle;
+
+    // std::cout << "omega: " << omega << " omega_rot: " << omega_rot << std::endl;
 
 
     if(abs(omega) > MAX_SPEED){
@@ -39,22 +51,24 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
             omega = -MAX_SPEED;
         }
     }
-    if(abs(omega_rot) > MAX_SPEED/8){
+    if(abs(omega_rot) > MAX_SPEED_ROT/2){
         if (omega_rot > 0){
-            omega_rot = MAX_SPEED/8;
+            omega_rot = MAX_SPEED_ROT/2;
         }
         else {
-            omega_rot = -MAX_SPEED/8;
+            omega_rot = -MAX_SPEED_ROT/2;
         }
     }
 
 
+    ramp.compute(&omega, &omega_rot, 0.05);
 
+    // std::cout << "omega ramp: " << omega << " omega_rot ramp: " << omega_rot << std::endl;
 
-    ramp.compute(&omega, &omega_rot, 0.10);
-    if(abs(*trans_speed) <= 10 && abs(*rot_speed) <= 1) //ak je spped mensai nez 10mm/sec i rotacna < 1 Rad
-        ramp.clear_time();
-    //std::cout << error_angle << " " << error_distance << " " << omega << std::endl;
-    *rot_speed = static_cast<int> (omega_rot);
+    *rot_speed = omega_rot;
     *trans_speed =static_cast<int> (omega);
+    if(abs(omega) <= 10 && abs(omega_rot) <= PI/180*2){ //ak je spped mensai nez 10mm/sec i rotacna < 1 Rad
+        ramp.clear_time();
+        // std::cout << "clear time" << std::endl;
+    }
 }

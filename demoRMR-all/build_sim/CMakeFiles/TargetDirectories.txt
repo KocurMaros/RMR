@@ -1,0 +1,12 @@
+/home/laptop/school/RMR/demoRMR-all/build_sim/CMakeFiles/rmr.dir
+/home/laptop/school/RMR/demoRMR-all/build_sim/CMakeFiles/edit_cache.dir
+/home/laptop/school/RMR/demoRMR-all/build_sim/CMakeFiles/rebuild_cache.dir
+/home/laptop/school/RMR/demoRMR-all/build_sim/CMakeFiles/rmr_autogen.dir
+/home/laptop/school/RMR/demoRMR-all/build_sim/robot/CMakeFiles/robot.dir
+/home/laptop/school/RMR/demoRMR-all/build_sim/robot/CMakeFiles/edit_cache.dir
+/home/laptop/school/RMR/demoRMR-all/build_sim/robot/CMakeFiles/rebuild_cache.dir
+/home/laptop/school/RMR/demoRMR-all/build_sim/robot/CMakeFiles/robot_autogen.dir
+/home/laptop/school/RMR/demoRMR-all/build_sim/QJoysticks-master/CMakeFiles/qjoysticks.dir
+/home/laptop/school/RMR/demoRMR-all/build_sim/QJoysticks-master/CMakeFiles/edit_cache.dir
+/home/laptop/school/RMR/demoRMR-all/build_sim/QJoysticks-master/CMakeFiles/rebuild_cache.dir
+/home/laptop/school/RMR/demoRMR-all/build_sim/QJoysticks-master/CMakeFiles/qjoysticks_autogen.dir

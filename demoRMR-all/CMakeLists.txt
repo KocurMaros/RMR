@@ -28,6 +28,8 @@ set(SOURCES
 	demoRMR/mainwindow.cpp
     demoRMR/ramp.cpp
     demoRMR/controller.cpp
+    demoRMR/hash_map.cpp
+    demoRMR/mapping.cpp
 )
 
 set(HEADER
@@ -35,7 +37,8 @@ set(HEADER
     demoRMR/ramp.h
     demoRMR/point.h
     demoRMR/controller.h
-
+    demoRMR/hash_map.h
+    demoRMR/mapping.h
 )
 set(UI
 	demoRMR/mainwindow.ui

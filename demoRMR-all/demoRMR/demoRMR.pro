@@ -12,7 +12,7 @@ TARGET = demoRMR
 TEMPLATE = app
 win32 {
 LIBS += -lws2_32
-LIBS += -lWinmm
+LIBS += -lWinmm 
 }
 INCLUDEPATH += ../robot
 LIBS += -L../bin -lrobot
@@ -83,11 +83,17 @@ INCLUDEPATH += /usr/local/include/opencv4/
 SOURCES += main.cpp\
         mainwindow.cpp\
         controller.cpp\
-        ramp.cpp
+        ramp.cpp\
+        mapping.cpp\
+        hash_map.cpp\
+        pathfinding.cpp
 
 HEADERS  += mainwindow.h\
         point.h\
         controller.h\
-        ramp.h
+        ramp.h\
+        mapping.h\
+        hash_map.h\
+        pathfinding.h
 
 FORMS    += mainwindow.ui

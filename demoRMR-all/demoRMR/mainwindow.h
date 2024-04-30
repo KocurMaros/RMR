@@ -31,6 +31,9 @@
 #include "point.h"
 #include "ramp.h"
 
+#include "mapping.h"
+#include "hash_map.h"
+
 typedef struct
 {
     int speed;
@@ -68,7 +71,9 @@ int processThisCamera(cv::Mat cameraData);
 
 private slots:
     void on_pushButton_9_clicked();
-
+    void on_pushButton_mapping_clicked();
+    void on_pushButton_loadMap_clicked();
+    
     void on_pushButton_2_clicked();
 
     void on_pushButton_3_clicked();
@@ -102,9 +107,12 @@ private:
     std::shared_ptr<Point> actual_point;
     std::shared_ptr<Point> set_point;
     std::shared_ptr<Point> desired_point;
-    
-
+    double prev_x_map;
+    double prev_y_map;
+ 
     std::vector<Point> points_vector;
+
+    std::shared_ptr<Mapping> maps;
     //vektor bude mat v sebe body, ktore, ked ich budes pridavat manualne tak sa pridaju appendom nakoniec
     //robot bude prechadzat bodmi tak, ze vzdy pojde na nulty bod vo vektore, akonahle sa tam dostane sa tento bod odstrani z vektora
     //robot bude chodit na body, len v pripade, ze vektor nie je prazdny
@@ -119,7 +127,6 @@ private:
 
     double forwardspeed;//mm/s
     double rotationspeed;//omega/s
-
     int prev_x;
     int prev_y;
     int prev_gyro;
@@ -140,6 +147,16 @@ private:
     double robotY;
     double robotFi;
     double prev_fi;
+    
+    double robotFi_gyro;
+   
+    bool rot_only;
+    uint8_t mapping;
+    bool mapping_start = false;
+    double m_rot_speed;
+    bool m_can_map;
+    bool save_map = false;
+    bool read_map = false;
 
 public slots:
      void setUiValues(double robotX,double robotY,double robotFi);

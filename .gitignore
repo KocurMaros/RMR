@@ -56,3 +56,9 @@ compile_commands.json
 
  .vscode/
  demoRMR-all/build/
+demoRMR-all/.qmake.stash
+demoRMR-all/.qtc_clangd/
+demoRMR-all/bin/
+demoRMR-all/demoRMR/release/
+demoRMR-all/robot/release/
+
