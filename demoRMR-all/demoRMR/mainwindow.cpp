@@ -28,8 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-    // ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
-    ipaddress="127.0.0.1";
+    ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    // ipaddress="127.0.0.1";
   //  cap.open("http://192.168.1.11:8000/stream.mjpg");
     ui->setupUi(this);
     datacounter=0;
@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
     actIndex=-1;
     useCamera1=false;
     first_run = true;
-    controller = make_shared<PIController>(3,0.1,2);
+    controller = make_shared<PIController>(6,0.1,2);
     actual_point = make_shared<Point>(0,0,0);
     prev_x_map = -1000;
     prev_y_map = -1000;
@@ -229,7 +229,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
  
             controller->compute(*actual_point,*desired_point,(double)1/40, &trans_speed, &rot_speed);
             m_rot_speed = rot_speed;
-
+            std::cout << "Rot speed " << rot_speed << " trans_speed " << trans_speed << std::endl;
             
             if(abs(controller->error_distance) < WITHIN_TOLERANCE){
                 mapping++;

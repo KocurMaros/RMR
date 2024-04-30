@@ -61,7 +61,7 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
     }
 
 
-    ramp.compute(&omega, &omega_rot, 0.01);
+    ramp.compute(&omega, &omega_rot, 0.05);
 
     // std::cout << "omega ramp: " << omega << " omega_rot ramp: " << omega_rot << std::endl;
 
