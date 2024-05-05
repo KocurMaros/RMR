@@ -8,9 +8,7 @@ PIController::PIController(double kp, double ki, double kp_rot) : kp_(kp), ki_(k
 
 PIController::~PIController() {}
 
-
-void PIController::compute(Point actual_point, Point desired_point, double dt_, int *trans_speed, double *rot_speed) {
-    
+void PIController::computeErrors(Point actual_point, Point desired_point){
     double actual_x, actual_y, actual_theta;
     double desired_x, desired_y, desired_theta;
     actual_x = actual_point.getX();
@@ -22,24 +20,23 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
 
 
     error_distance = sqrt(pow(desired_x - actual_x, 2) + pow(desired_y - actual_y, 2));
-    error_angle = atan2(desired_y - actual_y, desired_x - actual_x);
-    // std::cout << "atan2 = " << error_angle << std::endl;
-    error_angle = error_angle - actual_theta;
-    //  std::cout << "actual = " << actual_theta <<" error "<<error_angle<< std::endl;
-    // double error_angle = atan2(desired_.y - actual_.y, desired_.x - actual_.x);
-
+    error_angle = atan2(desired_y - actual_y, desired_x - actual_x) - actual_theta;
     if (error_angle > PI) {
         error_angle -= 2 * PI;
     } else if (error_angle <= -PI) {
         error_angle += 2 * PI;
     }
-    // std::cout << "error angle = " << error_angle << std::endl;
+}
+
+void PIController::compute(Point actual_point, Point desired_point, double dt_, int *trans_speed, double *rot_speed) {
+    computeErrors(actual_point,desired_point);
+
+
     integral_ = integral_ + error_distance*dt_;
 
     double omega = kp_*error_distance/* + ki_*integral_*/;
     double omega_rot = kp_rot_*error_angle;
 
-    // std::cout << "omega: " << omega << " omega_rot: " << omega_rot << std::endl;
 
 
     if(abs(omega) > MAX_SPEED){
@@ -63,7 +60,6 @@ void PIController::compute(Point actual_point, Point desired_point, double dt_, 
 
     ramp.compute(&omega, &omega_rot, 0.05);
 
-    // std::cout << "omega ramp: " << omega << " omega_rot ramp: " << omega_rot << std::endl;
 
     *rot_speed = omega_rot;
     *trans_speed =static_cast<int> (omega);

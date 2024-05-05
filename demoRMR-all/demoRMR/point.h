@@ -3,12 +3,13 @@
 
 class Point {
 public:
-    Point(); // Default constructor
+    Point(){}; // Default constructor
     Point(double x, double y, double theta){this->x = x; this->y = y;this->theta = theta;}; // Parameterized constructor
     Point(double x, double y, double theta,int i, int j ){this->x = x; this->y = y;this->theta = theta;this->index_x = i;this->index_y = j;}; // Parameterized constructor
 
     void setPoint(double x, double y, double theta){this->x = x; this->y = y; this->theta = theta;}; // Setter for both x and y coordinates
     void getPoint(double *x, double *y, double *theta){*x = this->x; *y = this->y; *theta = this->theta;}; // Getter for both x and y coordinates
+    void setPoint(Point *p){this->x = p->getX(); this->y = p->getY(); this->theta = p->getTheta();}; // Setter for both x and y coordinates
     double getX(){return x;}; // Getter for the difference in x coordinates
     double getY(){return y;}; // Getter for the difference in y coordinates
     double getTheta(){return  theta;}; // Getter for the difference in angle

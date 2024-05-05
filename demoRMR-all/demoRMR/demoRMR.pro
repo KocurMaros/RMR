@@ -81,19 +81,21 @@ INCLUDEPATH += /usr/local/include/opencv4/
 
 
 SOURCES += main.cpp\
+        collision_detection.cpp \
         mainwindow.cpp\
         controller.cpp\
         ramp.cpp\
         mapping.cpp\
         hash_map.cpp\
-        pathfinding.cpp
+        wall_following.cpp
 
 HEADERS  += mainwindow.h\
+        collision_detection.h \
         point.h\
         controller.h\
         ramp.h\
         mapping.h\
         hash_map.h\
-        pathfinding.h
+        wall_following.h
 
 FORMS    += mainwindow.ui

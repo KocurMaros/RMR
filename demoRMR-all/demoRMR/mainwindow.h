@@ -5,6 +5,7 @@
 #include <QTimer>
 #ifdef _WIN32
 #include<windows.h>
+#include "collision_detection.h"
 #endif
 #include<iostream>
 //#include<arpa/inet.h>
@@ -30,6 +31,7 @@
 #include "controller.h"
 #include "point.h"
 #include "ramp.h"
+#include "wall_following.h"
 
 #include "mapping.h"
 #include "hash_map.h"
@@ -52,7 +54,7 @@ class MainWindow : public QMainWindow
 public:
     
     MovementsParam param;
-
+    static double angDiff(double alpha, double beta);
     bool useCamera1;
   //  cv::VideoCapture cap;
 
@@ -91,10 +93,18 @@ private slots:
 
     void on_pushButton_10_clicked();
 
+    void on_pushButton_11_clicked();
+
 private:
 
     void addPointAtStart(Point p);
     double calculateEncoderDelta(int prev, int actual);
+    bool isThereObstacleInZone(double zoneAngle, double zoneDistance);
+    bool isThereObstacleInZoneStatic(double zoneAngle, double zoneDistance);
+    bool checkLeftEdgePointObstacle();
+    bool checkRightEdgePointObstacle();
+    void findEdgeLeft();
+    void findEdgeRight();
     //--skuste tu nic nevymazat... pridavajte co chcete, ale pri odoberani by sa mohol stat nejaky drobny problem, co bude vyhadzovat chyby
     Ui::MainWindow *ui;
     void paintEvent(QPaintEvent *event);// Q_DECL_OVERRIDE;
@@ -110,6 +120,14 @@ private:
     double prev_x_map;
     double prev_y_map;
  
+    std::shared_ptr<Point> obstacle_avoidance_point;
+    bool obstacle_point_set;
+    CollisionDetection collision_detection;
+    double calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, std::shared_ptr<Point> goalPoint, Point *midPoint);
+    double calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, std::shared_ptr<Point> goalPoint);
+
+    WallFollowing wall_following_object;
+
     std::vector<Point> points_vector;
 
     std::shared_ptr<Mapping> maps;
@@ -133,6 +151,8 @@ private:
     bool first_run;
 
     bool bruh;
+    bool test_collision;
+
     int start_left;
     int start_right;
     int start_gyro;
@@ -157,6 +177,19 @@ private:
     bool m_can_map;
     bool save_map = false;
     bool read_map = false;
+
+    bool line_following;
+    bool trajectory_clear;
+    double shortest_distance_to_goal;
+    double current_distance_to_goal;
+
+    double left_point_distance;
+    double left_point_angle;
+    double right_point_distance;
+    double right_point_angle;
+
+    bool wall_following;
+    bool wall_following_first_run;
 
 public slots:
      void setUiValues(double robotX,double robotY,double robotFi);
