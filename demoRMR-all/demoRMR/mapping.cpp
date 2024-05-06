@@ -108,8 +108,8 @@ void Mapping::load_map()
             char comma;
             if (iss >> arg1 >> comma >> arg2) {
                 map.update_map(Point(arg1,arg2,0), 1);
-                for (int dx = -30; dx <= 30; dx+=10)
-                    for(int dy = -30; dy <= 30; dy+=10)
+                for (int dx = -20; dx <= 20; dx+=10)
+                    for(int dy = -20; dy <= 20; dy+=10)
                         map.update_map(Point(arg1+dx,arg2+dy,0), 1);
             }
             start = line.find('[', end);
