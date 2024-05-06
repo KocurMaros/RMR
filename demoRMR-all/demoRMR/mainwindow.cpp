@@ -267,7 +267,7 @@ void MainWindow::on_pushButton_loadMap_clicked(){
     if (xOK && yOK){
         cout << "Loading map" << endl;
         maps->load_map();
-        maps->print_map();
+        // maps->print_map();
         cout << "Map loaded" << endl;
         Point point(x*100,y*100,0*PI/180);
         std::vector<Point> trajectory = maps->flood_fill(Point(robotX*100,robotY*100,0),point);
@@ -275,7 +275,7 @@ void MainWindow::on_pushButton_loadMap_clicked(){
             points_vector.push_back(p);
             cout << "X: " << p.getX() << " Y: " << p.getY() << endl;
         }
-        maps->print_map();
+        // maps->print_map();
         bruh = true;
     }
     else {
@@ -746,7 +746,7 @@ void MainWindow::findEdgeLeft(){
         prev_angle = lidar_angle;
 
         angle_difference = angDiff(obstacle_angle, lidar_angle);
-        std::cout << "angle_difference: " << angle_difference << std::endl;
+        // std::cout << "angle_difference: " << angle_difference << std::endl;
         lidar_index--;
     }
     std::cout << "left edge not found" << std::endl;
@@ -790,7 +790,7 @@ void MainWindow::findEdgeRight(){
         prev_angle = lidar_angle;
 
         angle_difference = angDiff(obstacle_angle, lidar_angle);
-        std::cout << "angle_difference: " << angle_difference << std::endl;
+        // std::cout << "angle_difference: " << angle_difference << std::endl;
         lidar_index++;
     }
 }
@@ -806,7 +806,7 @@ bool MainWindow::checkLeftEdgePointObstacle(){
     }
     left_point_distance = distance;
     left_point_angle = angle/PI*180;
-    std::cout << "angle: " << angle/PI*180 << " distance: " << distance << std::endl;
+    // std::cout << "angle: " << angle/PI*180 << " distance: " << distance << std::endl;
     return isThereObstacleInZoneStatic(angle/PI*180,distance);
 }
 
@@ -821,7 +821,7 @@ bool MainWindow::checkRightEdgePointObstacle(){
     }
     right_point_distance = distance;
     right_point_angle = angle/PI*180;
-    std::cout << "angle: " << angle/PI*180 << " distance: " << distance << std::endl;
+    // std::cout << "angle: " << angle/PI*180 << " distance: " << distance << std::endl;
     return isThereObstacleInZoneStatic(angle/PI*180,distance);}
 
 double MainWindow::calculateDistanceToGoal(std::shared_ptr<Point> currentPoint, std::shared_ptr<Point> goalPoint, Point *midPoint){

@@ -90,9 +90,9 @@ void Obstacle::calculateLeftEdgePoint(double robotX, double robotY, double robot
     double c = sqrt(pow(getLeftEdge()->getDistance(),2) - pow(CRITICAL_DISTANCE*3/2,2));
     double alfa = asin(CRITICAL_DISTANCE*3/2/getLeftEdge()->getDistance())+ getLeftEdge()->getAngle() * PI / 180;
 
-    std::cout << "asin: " << asin(CRITICAL_DISTANCE*3/2/getLeftEdge()->getDistance())*180/PI << std::endl;
-    std::cout << "alfa: " << alfa*180/PI << std::endl;
-    std::cout << "left edge angle: " << getLeftEdge()->getAngle() << std::endl;
+    // std::cout << "asin: " << asin(CRITICAL_DISTANCE*3/2/getLeftEdge()->getDistance())*180/PI << std::endl;
+    // std::cout << "alfa: " << alfa*180/PI << std::endl;
+    // std::cout << "left edge angle: " << getLeftEdge()->getAngle() << std::endl;
 
     alfa = alfa + robotFi*PI/180;
 
@@ -106,11 +106,11 @@ void Obstacle::calculateLeftEdgePoint(double robotX, double robotY, double robot
     double x = robotX +  c * cos(alfa);
     double y = robotY + c * sin(alfa);
 
-    std::cout << "c: " << c << std::endl;
-    std::cout << "x: " << x << std::endl;
-    std::cout << "y: " << y << std::endl;
-    std::cout << "robotX: " << robotX << std::endl;
-    std::cout << "robotY: " << robotY << std::endl;
+    // std::cout << "c: " << c << std::endl;
+    // std::cout << "x: " << x << std::endl;
+    // std::cout << "y: " << y << std::endl;
+    // std::cout << "robotX: " << robotX << std::endl;
+    // std::cout << "robotY: " << robotY << std::endl;
     getLeftEdge()->getPoint()->setPoint(x*1000,y*1000,0);
 }
 
@@ -118,9 +118,9 @@ void Obstacle::calculateRightEdgePoint(double robotX, double robotY, double robo
     double c = sqrt(pow(getRightEdge()->getDistance(),2) - pow(CRITICAL_DISTANCE*3/2,2));
     double alfa = getRightEdge()->getAngle() * PI / 180 - asin(CRITICAL_DISTANCE*3/2/getRightEdge()->getDistance());
 
-    std::cout << "asin: " << asin(CRITICAL_DISTANCE*3/2/getLeftEdge()->getDistance())*180/PI << std::endl;
-    std::cout << "alfa: " << alfa*180/PI << std::endl;
-    std::cout << "right edge angle: " << getLeftEdge()->getAngle() << std::endl;
+    // std::cout << "asin: " << asin(CRITICAL_DISTANCE*3/2/getLeftEdge()->getDistance())*180/PI << std::endl;
+    // std::cout << "alfa: " << alfa*180/PI << std::endl;
+    // std::cout << "right edge angle: " << getLeftEdge()->getAngle() << std::endl;
 
     alfa = alfa + robotFi*PI/180;
 
@@ -131,11 +131,11 @@ void Obstacle::calculateRightEdgePoint(double robotX, double robotY, double robo
     double x = robotX +  c * cos(alfa);
     double y = robotY + c * sin(alfa);
 
-    std::cout << "c: " << c << std::endl;
-    std::cout << "x: " << x << std::endl;
-    std::cout << "y: " << y << std::endl;
-    std::cout << "robotX: " << robotX << std::endl;
-    std::cout << "robotY: " << robotY << std::endl;
+    // std::cout << "c: " << c << std::endl;
+    // std::cout << "x: " << x << std::endl;
+    // std::cout << "y: " << y << std::endl;
+    // std::cout << "robotX: " << robotX << std::endl;
+    // std::cout << "robotY: " << robotY << std::endl;
     getRightEdge()->getPoint()->setPoint(x*1000,y*1000,0);
 }
 

@@ -30,6 +30,8 @@ set(SOURCES
     demoRMR/controller.cpp
     demoRMR/hash_map.cpp
     demoRMR/mapping.cpp
+	demoRMR/collision_detection.cpp
+	demoRMR/wall_following.cpp
 )
 
 set(HEADER
@@ -39,6 +41,8 @@ set(HEADER
     demoRMR/controller.h
     demoRMR/hash_map.h
     demoRMR/mapping.h
+	demoRMR/collision_detection.h
+	demoRMR/wall_following.h
 )
 set(UI
 	demoRMR/mainwindow.ui

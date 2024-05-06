@@ -295,7 +295,7 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
         frontier.pop();
 
         if (current.getX() == startX && current.getY() == startY) {
-            print_map();
+            // print_map();
             uint16_t act_index;
             int x_path = current.getX();
             int y_path = current.getY();
@@ -319,7 +319,7 @@ std::vector<Point> Mapping::floodFillPathfind(int startX, int startY, int goalX,
                     path.push_back(Point(map.get_coordinates()[x_path][y_path].getX()*10, map.get_coordinates()[x_path][y_path].getY()*10, 0));
                 }
                 act_index = grid[x_path][y_path];
-                std::cout << "act_index " << act_index << std::endl;
+                // std::cout << "act_index " << act_index << std::endl;
             }
             std::cout << "found goal" << std::endl;
             return path;
