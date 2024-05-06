@@ -36,31 +36,37 @@ void WallFollowing::computeDistancesToWall(){
     int left_count = 0;
     int right_count = 0;
     int front_count = 0;
+    left_distance = 0;
+    right_distance = 0;
+    front_distance = 0;
     for(int k=0;k<laser_data.numberOfScans/*360*/;k++){
         lidar_angle = CollisionDetection::normalizeLidarAngle(laser_data.Data[k].scanAngle);
         lidar_distance = laser_data.Data[k].scanDistance/1000.0;
-        if (lidar_angle >= 87 && lidar_angle <= 92){
+        if (lidar_angle >= 89 && lidar_angle <= 91){
             //left
             if (lidar_distance != 0 ){
                 left_count++;
                 left_distance += lidar_distance;
             }
         }
-        else if (lidar_angle <= -87 && lidar_angle <= -92){
+        else if (lidar_angle <= -89 && lidar_angle >= -91){
             //right
             if (lidar_distance != 0){
                 right_count++;
                 right_distance += lidar_distance;
             }
         }
-        else if((lidar_angle >=0 && lidar_angle <=2)||(lidar_angle <=0 && lidar_angle >= -2)){
+        else if((lidar_angle >=0 && lidar_angle <=1)||(lidar_angle <=0 && lidar_angle >= -1)){
             //front
+            std::cout << "front bro " << std::endl;
             if (lidar_distance != 0){
                 front_count++;
                 front_distance += lidar_distance;
             }
         }
     }
+    std::cout << "left count: " << left_count << "right count: " << right_count << " front count: " << front_count << std::endl;
+    std::cout << "left distance1: " << left_distance << "right distance1: " << right_distance << "front distance1: " << front_distance << std::endl;
     if (left_count != 0){
         left_distance = left_distance/left_count;
     }
@@ -70,6 +76,7 @@ void WallFollowing::computeDistancesToWall(){
     if (front_count != 0){
         front_distance = front_distance/front_count;
     }
+    std::cout << "left distance2: " << left_distance << "right distance2: " << right_distance << "front distance2: " << front_distance << std::endl;
     computeDistanceLeft();
     computeDistanceRight();
     computeDistanceFront();
@@ -105,10 +112,10 @@ void WallFollowing::computeDistanceFront(){
 
 double WallFollowing::computeRotationVelocity(){
     if (follow_right_side){
-        return -computeRotationVelocityRightSide()/1000.0;
+        return computeRotationVelocityRightSide()/1000.0;
     }
     else {
-        return -computeRotationVelocityLeftSide()/1000.0;
+        return computeRotationVelocityLeftSide()/1000.0;
     }
 }
 
