@@ -29,7 +29,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-    ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    // ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    ipaddress="127.0.0.1";
   //  cap.open("http://192.168.1.11:8000/stream.mjpg");
     ui->setupUi(this);
     datacounter=0;
@@ -399,7 +400,6 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
             controller->computeErrors(*actual_point,*desired_point);
             current_distance_to_goal = controller->error_distance;
 
-            // TODO: if (wall_following) ..., else: tato srandicka
             // prvykrat najdes minimum, ked bolo po lavej strane od teba followujes stenu vlavo, inak v pravo...
             // ked najdes to minimum tak vypocias bod kam sa ma dostat a natocis sa 90 stupnov vpravo/vlavo, vynulujes flag na first_wall alebo tak
             if (wall_following){
@@ -442,6 +442,22 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 }
                 //TODO: ak sa vzdialenost zmensi a vidim na ciel konci
                 //ak ne tak rob wall following
+                wall_following_object.computeDistancesToWall();
+                rot_speed = wall_following_object.computeRotationVelocity();
+                std::cout << "rot_speed: " << rot_speed << std::endl;
+                //ARC
+                if(rot_speed == 0){
+                    rot_speed = 0.001;
+                }
+                radius = WALL_FOLLOWING_VELOCITY/rot_speed;
+
+                std::cout << "radius: " << radius << std::endl;
+                if(radius > 32767)
+                    radius = 32767;
+                else if(radius < -32767)
+                    radius = -32767;
+                robot.setArcSpeed(WALL_FOLLOWING_VELOCITY,radius);
+                return 0;
             }
             else {
 
@@ -450,10 +466,9 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                     shortest_distance_to_goal = current_distance_to_goal;
                 }
                 else {
-                    //TODO: logic for wall following
-                    // wall_following = true;
-                    // wall_following_first_run = true;
-                    // return 0;
+                    wall_following = true;
+                    wall_following_first_run = true;
+                    return 0;
                 }
 
                 //TODO: ak je prejazdovy bod true, tak do controllera pacni ten, ak ne tak pacni aktualny
@@ -532,16 +547,16 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                         }
                         else {
                             // follow wall TODO:
-                            // wall_following = true;
-                            //wall_following_first_run = true;
-                            // collision_detection.resetCollisionDetection();
+                            wall_following = true;
+                            wall_following_first_run = true;
+                            collision_detection.resetCollisionDetection();
                         }
                         std::cout << "finished this checking" << std::endl;
                         return 0;
                     }
                 }
                 else{
-                    //TODO: ?
+                    //TODO: nic asi
                     return 0;
                 }
 
