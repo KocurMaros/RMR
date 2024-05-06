@@ -29,8 +29,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-    // ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
-    ipaddress="127.0.0.1";
+    ipaddress="192.168.1.11";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+    // ipaddress="127.0.0.1";
   //  cap.open("http://192.168.1.11:8000/stream.mjpg");
     ui->setupUi(this);
     datacounter=0;
@@ -276,6 +276,10 @@ void MainWindow::on_pushButton_loadMap_clicked(){
             cout << "X: " << p.getX() << " Y: " << p.getY() << endl;
         }
         // maps->print_map();
+        //print vector of points
+        for(auto &p : points_vector){
+            cout << "X: " << p.getX() << " Y: " << p.getY() << endl;
+        }
         bruh = true;
     }
     else {
@@ -687,7 +691,8 @@ bool MainWindow::isThereObstacleInZone(double zoneAngle, double zoneDistance) {
         if(collision_detection.isObstacleInPath(copyOfLaserData.Data[k].scanDistance/1000.0,copyOfLaserData.Data[k].scanAngle,zoneAngle,zoneDistance)){
             collision_detection.getObstacle()->setIndex(k);
             collision_detection.getObstacle()->setFoundObstacle(true);
-            std::cout << "THERE IS AN OBSTACLE, :" << collision_detection.getObstacle()->isFoundObstacle() << std::endl;
+            std::cout << "THERE IS AN OBSTACLE, :" << collision_detection.getObstacle()->isFoundObstacle() << " angle: "<< collision_detection.getObstacle()->getAngle() << " distance: "
+            << collision_detection.getObstacle()->getDistance()<< std::endl;
             collision_detection.setLaserData(copyOfLaserData);
             return true;
         }

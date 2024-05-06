@@ -1,6 +1,8 @@
 #include "collision_detection.h"
 #include<iostream>
 
+#define MAX_ZONE_DISTANCE 1.0
+
 bool CollisionDetection::isObstacleInPathStatic(double scanDistance, double scanAngle, double zoneAngle, double zoneDistance){
     //distances su v metroch
     //vsetky vstupy su v STUPNOCH
@@ -45,6 +47,8 @@ bool CollisionDetection::isObstacleInPath(double scanDistance, double scanAngle,
 
     //normalizacia uhlu z lidaru
     scanAngle = normalizeLidarAngle(scanAngle);
+    if (zoneDistance>MAX_ZONE_DISTANCE)
+    zoneDistance = MAX_ZONE_DISTANCE;
 
 
     //normalizacia angle erroru v zone
