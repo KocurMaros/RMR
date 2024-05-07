@@ -29,8 +29,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     //tu je napevno nastavena ip. treba zmenit na to co ste si zadali do text boxu alebo nejaku inu pevnu. co bude spravna
-    // ipaddress="192.168.1.15";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
-    ipaddress="127.0.0.1";
+     ipaddress="192.168.1.14";//192.168.1.11toto je na niektory realny robot.. na lokal budete davat "127.0.0.1"
+     //ipaddress="127.0.0.1";
   //  cap.open("http://192.168.1.11:8000/stream.mjpg");
     ui->setupUi(this);
     datacounter=0;
@@ -73,6 +73,7 @@ MainWindow::MainWindow(QWidget *parent) :
     test_collision = false;
     wall_following_first_run = false;
     shortest_distance_to_goal = 10000000;
+    std::cout << "wall distance " << WALL_DISTANCE << "front distance " << FRONT_DISTANCE << std::endl;
 }
 
 MainWindow::~MainWindow()
@@ -457,6 +458,11 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 else if(radius < -32767)
                     radius = -32767;
                 robot.setArcSpeed(WALL_FOLLOWING_VELOCITY,radius);
+
+                if((current_distance_to_goal<shortest_distance_to_goal) && (!isThereObstacleInZone(controller->error_angle/PI*180,controller->error_distance/1000.0))){
+                    wall_following = false;
+                }
+
                 return 0;
             }
             else {

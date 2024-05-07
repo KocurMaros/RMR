@@ -5,6 +5,7 @@
 #include "collision_detection.h"
 #define WALL_FOLLOWING_VELOCITY 100.0 //mm/s
 #define WALL_DISTANCE 0.5 //m
+#define FRONT_DISTANCE WALL_DISTANCE*1.2
 #define WALL_THRESHOLD 0 //m
 #define ROBOT_L 0.23 // [m]
 

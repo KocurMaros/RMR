@@ -42,11 +42,22 @@ void WallFollowing::computeDistancesToWall(){
     for(int k=0;k<laser_data.numberOfScans/*360*/;k++){
         lidar_angle = CollisionDetection::normalizeLidarAngle(laser_data.Data[k].scanAngle);
         lidar_distance = laser_data.Data[k].scanDistance/1000.0;
-        if (lidar_angle >= 89 && lidar_angle <= 91){
+        if ((lidar_angle >= 89 && lidar_angle <= 91)){
             //left
             if (lidar_distance != 0 ){
                 left_count++;
                 left_distance += lidar_distance;
+            }
+        }
+        else if ((lidar_angle >=44 && lidar_angle <= 46)){
+            //front left
+            if (!follow_right_side){
+                if (lidar_distance != 0){
+                    left_count++;
+                    left_distance += lidar_distance;
+                    front_count++;
+                    front_distance += lidar_distance;
+                }
             }
         }
         else if (lidar_angle <= -89 && lidar_angle >= -91){
@@ -56,9 +67,18 @@ void WallFollowing::computeDistancesToWall(){
                 right_distance += lidar_distance;
             }
         }
+        else if ((lidar_angle <=-44 && lidar_angle >= -46)){
+            if (follow_right_side){
+                if (lidar_distance != 0){
+                    right_count++;
+                    right_distance += lidar_distance;
+                    front_count++;
+                    front_distance += lidar_distance;
+                }
+            }
+        }
         else if((lidar_angle >=0 && lidar_angle <=1)||(lidar_angle <=0 && lidar_angle >= -1)){
             //front
-            std::cout << "front bro " << std::endl;
             if (lidar_distance != 0){
                 front_count++;
                 front_distance += lidar_distance;
@@ -102,7 +122,7 @@ void WallFollowing::computeDistanceRight(){
 }
 
 void WallFollowing::computeDistanceFront(){
-    if(front_distance < (WALL_DISTANCE-WALL_THRESHOLD) && front_distance!=0){
+    if(front_distance < (FRONT_DISTANCE-WALL_THRESHOLD) && front_distance!=0){
         front = true;
     }
     else{
@@ -162,7 +182,7 @@ double WallFollowing::computeRotationVelocityLeftSide(){
         }
     }
     else if(front && left){
-        std::cout << "speed4 = " << -2*WALL_FOLLOWING_VELOCITY/ROBOT_L << std::endl;
+        // std::cout << "speed4 = " << -2*WALL_FOLLOWING_VELOCITY/ROBOT_L << std::endl;
         return -2*WALL_FOLLOWING_VELOCITY/ROBOT_L;
     }
 }
