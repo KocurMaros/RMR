@@ -3,8 +3,12 @@
 #include <rplidar.h>
 #include "point.h"
 #include "collision_detection.h"
-#define WALL_FOLLOWING_VELOCITY 300 //mm/s
-#define WALL_DISTANCE 0.1 //m
+#define WALL_FOLLOWING_VELOCITY 100.0 //mm/s
+#define WALL_DISTANCE 0.5 //m
+#define FRONT_DISTANCE WALL_DISTANCE*1.2
+#define WALL_THRESHOLD 0 //m
+#define ROBOT_L 0.23 // [m]
+
 
 class WallFollowing {
 public:
@@ -19,14 +23,15 @@ public:
     void setPoint(Point point) {this->first_point = point;}
     void findWall(double robotFi, double robotX, double robotY);
     void computeDistancesToWall();
-    void computeVelocities();
-    void computeRotationVelocity();
+    double computeRotationVelocity();
     void checkIsRotatedPerpendicularly(double robotFi);
     void resetWallFollowing();
 private:
     void computeDistanceLeft();
     void computeDistanceRight();
     void computeDistanceFront();
+    double computeRotationVelocityRightSide();
+    double computeRotationVelocityLeftSide();
     void setDistanceFlags();
     void calculateDesiredAngle();
     void computeFirstPoint(double robotFi, double robotX, double robotY);
