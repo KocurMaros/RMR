@@ -475,6 +475,7 @@ int MainWindow::processThisRobot(TKobukiData robotdata)
                 else if(radius < -32767)
                     radius = -32767;
                 robot.setArcSpeed(WALL_FOLLOWING_VELOCITY,radius);
+                controller->computeErrors(*actual_point,*desired_point);
 
                 if((current_distance_to_goal<shortest_distance_to_goal) && (!isThereObstacleInZone(controller->error_angle/PI*180,controller->error_distance/1000.0))){
                     wall_following = false;
